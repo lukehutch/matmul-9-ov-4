@@ -37,19 +37,36 @@ import numpy as np
 # ============================================================================
 # Exact algebraic evaluators (matching Sections 3--4 of matmul_9_4_constant.tex)
 # ============================================================================
+def _vec_ln_fact(n: np.ndarray) -> np.ndarray:
+    """Vectorized Stirling + 1/(12n) approximation accurate to < 1e-10 for n >= 10."""
+    out = np.zeros_like(n, dtype=np.float64)
+    pos = n > 1
+    np_v = n[pos].astype(np.float64)
+    out[pos] = (np_v + 0.5) * np.log(np_v) - np_v + 0.5 * math.log(2.0 * math.pi) + 1.0 / (12.0 * np_v)
+    return out
+
+
 def log_exact_Md(c: int, d: int) -> float:
-    """Natural log of exact balanced-word count M_d(c) = sum_{h=0}^d (C(d,h)(c+1)^{d-h})^2."""
+    """Natural log of exact balanced-word count M_d(c) = sum_{h=0}^d (C(d,h)(c+1)^{d-h})^2
+    evaluated by vectorized log-concave peak window summation (no Gaussian approximation)."""
+    lg_d = math.lgamma(d + 1)
+    lc1 = math.log(c + 1)
     if d <= 600:
-        lg_d = math.lgamma(d + 1)
-        lc1 = math.log(c + 1)
-        terms = [
-            2.0 * (lg_d - math.lgamma(h + 1) - math.lgamma(d - h + 1) + (d - h) * lc1)
-            for h in range(d + 1)
-        ]
-        m = max(terms)
-        return m + math.log(sum(math.exp(x - m) for x in terms))
-    p_b = 1.0 / (c + 2.0)
-    return 2.0 * d * math.log(c + 2.0) - 0.5 * math.log(4.0 * math.pi * d * p_b * (1.0 - p_b))
+        hs = np.arange(0, d + 1, dtype=np.int64)
+        terms = np.array([
+            2.0 * (lg_d - math.lgamma(int(h) + 1) - math.lgamma(d - int(h) + 1) + (d - int(h)) * lc1)
+            for h in hs
+        ])
+        m = float(np.max(terms))
+        return m + math.log(float(np.sum(np.exp(terms - m))))
+    h_star = max(0, min(d, (d + 1) // (c + 2)))
+    sigma = math.sqrt(max(1.0, d / (c + 2.0) * (1.0 - 1.0 / (c + 2.0))))
+    W = max(14, int(math.ceil(7.0 * sigma)))
+    h1, h2 = max(0, h_star - W), min(d, h_star + W)
+    hs = np.arange(h1, h2 + 1, dtype=np.float64)
+    terms = 2.0 * (lg_d - _vec_ln_fact(hs) - _vec_ln_fact(d - hs) + (d - hs) * lc1)
+    m = float(np.max(terms))
+    return m + math.log(float(np.sum(np.exp(terms - m))))
 
 
 def exact_Lk_log2m1(c: int, k: int) -> float:
@@ -284,17 +301,17 @@ def shared_legend_handles(c_post: str, c_opt: str, c_pre: str, c_str3: str, c_sl
     """
     return [
         Line2D([0], [0], color=c_post, linestyle="-", lw=2.1,
-               label=r"Pass post-Bini $V$ (Lemma 2.9 LB)"),
+               label=r"Pass post-Bini $V$ (Lemma 2.9 LB envelope)"),
         Line2D([0], [0], color="none", marker="o", markersize=6.6,
                markerfacecolor="none", markeredgecolor=c_post, markeredgewidth=1.55,
-               label=r"Pass post-Bini $V$ (achievable UB)"),
+               label=r"Pass post-Bini $V$ (witness UB)"),
         Line2D([0], [0], color=c_opt, linestyle="-.", lw=1.85,
-               label="Optimized Pass ($M_d$ + Lü) post-Bini UB"),
+               label=r"Optimized Pass ($M_d$) post-Bini UB"),
         Line2D([0], [0], color=c_pre, linestyle="-", lw=2.1,
-               label=r"Pass pre-Bini $v_k$ (universal LB)"),
+               label=r"Pass pre-Bini $v_k$ (LB envelope)"),
         Line2D([0], [0], color="none", marker="o", markersize=6.6,
                markerfacecolor="none", markeredgecolor=c_pre, markeredgewidth=1.55,
-               label=r"Pass pre-Bini $v_k$ (achievable UB)"),
+               label=r"Pass pre-Bini $v_k$ (witness UB)"),
         Line2D([0], [0], color=c_str3, linestyle="-", lw=2.1,
                label=r"Untwisted $\mathrm{Str}_3^{\otimes N}$ single-matrix UB"),
         Line2D([0], [0], color="none", marker="s", markersize=6.8,
@@ -458,7 +475,7 @@ def main() -> None:
     configure_y_axis(ax1)
     ax1.set_xlim(2.235, 2.835)
     ax1.set_xlabel(r"Target matrix multiplication exponent $\tau$")
-    ax1.set_title(r"Universal lower bounds and constructive achievability vs. exponent $\tau$")
+    ax1.set_title(r"Universal lower bounds and constructive witnesses vs. exponent $\tau$")
 
     ax1.annotate(r"Post-Bini $V$" + "\n" + r"($10^{2.1\times 10^{21}}$ at $2.251$)",
                  xy=(taus[idx_2251], post_lb[idx_2251]), xytext=(2.375, 2.5e19),

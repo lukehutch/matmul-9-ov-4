@@ -24,20 +24,21 @@ Under Pass's Lemma 2.9 tracked formal degree budget $S^{2k-1}$, Bini $\varepsilo
 
 ### Headline Scaling Laws (Polynomial-Packing Framework)
 
-Across **every** valid parameter choice $(c, d, k)$ of Pass's Theorem 4.3 as $\delta = \tau - 9/4 \to 0^+$, no realization can go below:
+Across **every** valid parameter choice $(c, d, k)$ of Pass's Theorem 4.3 as $\delta = \tau - 9/4 \to 0^+$, the minima over valid parameters obey:
 
 - **Pre-Bini approximate base block side $v_k$:**
   $$\log_{10} v_k(\delta) \;=\; \Theta\!\Bigl(\delta^{-3}\,(\ln \delta^{-1})^2\Bigr)$$
 - **Post-Bini exact base block side $V = v_k^h$ (under Pass's Lemma 2.9 tracked degree budget $S^{2k-1}$, with upper witnesses certified under the proved bound $2 S^{2k}$):**
   $$\log_{10} V(\delta) \;=\; \Theta\!\Bigl(\delta^{-5}\,(\ln \delta^{-1})^3\Bigr)$$
-- **Multiplication-count constant $C(\tau)$ in $T(n) \le C(\tau)\,n^\tau$:**
-  $$C(\tau) \;\ge\; (V - 1)^{3 - \tau} \quad \text{(when the algorithm falls back to schoolbook below } V\text{)}, \qquad \log_{10} C_{\mathrm{pad}}(\tau) \;=\; \Theta\!\Bigl(\delta^{-5}\,(\ln \delta^{-1})^3\Bigr).$$
+- **Least uniform multiplication-count constant $C_{\min}(\tau)$ in $T(n) \le C(\tau)\,n^\tau$:**
+  $$C(\tau) \;\ge\; (V - 1)^{3 - \tau} \quad \text{(when the algorithm falls back to schoolbook below } V\text{)}, \qquad \log_{10} C_{\min}(\tau) \;=\; \Theta\!\Bigl(\delta^{-5}\,(\ln \delta^{-1})^3\Bigr)$$
+  for unpruned power-of-$V$ recursion (and likewise with schoolbook or padded Strassen fallback below $V$).
 
-For generalized Remark 4.5 iterations satisfying our finite lower-effort and $9/4$-rate hypotheses (`thm:remark45_universal`) with $n_{\mathrm{s}} = \Omega(\delta^{-1})$ sources, the pre-Bini bound $\log_{10} v_k(\delta) = \Omega(\delta^{-3}\ln\delta^{-1})$ persists even at zero balancing loss ($\Delta_{\mathrm{bal}} = 1$).
+For generalized Remark 4.5 iterations satisfying our finite lower-effort and $9/4$-rate hypotheses (`thm:remark45_universal`) with fixed $m_{\mathrm{t}} - n_{\mathrm{s}} > 0$ and $n_{\mathrm{s}} = \Omega(\delta^{-1})$ sources, the pre-Bini bound $\log_{10} v_k(\delta) = \Omega(\delta^{-3}\ln\delta^{-1})$ persists even at zero balancing loss ($\Delta_{\mathrm{bal}} = 1$).
 
 ### Concrete Numbers Across Benchmark Exponents
 
-The globally certified universal lower bounds (rounded downward) and exact integer constructive witnesses (rounded $\log_{10}$ sides) agree to within **$2\%$ to $23\%$ in $\log_{10} v_k$ and $\log_{10} V$** across 16 orders of magnitude:
+The globally certified universal lower bounds (44-digit outward-rounded interval arithmetic, rounded downward) and exact integer constructive witnesses (rounded $\log_{10}$ sides) agree to within **about $2\%$ to $24\%$ in $\log_{10} v_k$ and $\log_{10} V$** across 16 orders of magnitude:
 
 | Target $\tau$ | Benchmark | Pre-Bini $\log_{10} v_k$ (LB $\to$ UB) | Post-Bini $\log_{10} V$ (Lemma 2.9 LB $\to$ $2S^{2k}$ UB) | Schoolbook $\log_{10} C_{\mathrm{sb}} >$ |
 | :--- | :--- | :---: | :---: | :---: |
@@ -50,15 +51,15 @@ The globally certified universal lower bounds (rounded downward) and exact integ
 
 ### How Much Can Optimizations Cut the Constant?
 
-- **Exact balanced-word counting ($M_d$) + Lü's $(2w - 1)$-point substitution:** In Table 4, replacing Cauchy-Schwarz $w$ with $M_d$ and using $(2w - 1)$-point linear-degree separation cuts $\log_{10} V$ by **$1.8\times$ to $2.8\times$** relative to literal Pass (and **$4.3\times$ to $5.9\times$** relative to OpenAI's $5w$ separation), without altering the $\delta^{-5}(\ln\delta^{-1})^3$ scaling.
+- **Exact balanced-word counting ($M_d$) + Pass's $(2w - 1)$-point separation:** In Table 4 (certified via explicit integer tuples in 44-digit outward-rounded interval arithmetic), replacing Cauchy-Schwarz $w$ with $M_d$ inside Pass's Lemma 3.4 over $\mathbb{Q}$ cuts $\log_{10} V$ by **$1.81\times$ to $2.78\times$** relative to literal Pass (and **$4.31\times$ to $5.88\times$** relative to OpenAI's $5w$ separation over fields containing a primitive $(5w)$-th root of unity), without altering the $\delta^{-5}(\ln\delta^{-1})^3$ scaling.
 - **Single-shot untwisting of Strassen's $\mathrm{Str}_3^{\otimes N}$:** Eliminates the $2k$-half-round degree cascade, dropping the $\tau = 2.800$ base block side from $10^{1.173 \times 10^6}$ down to **$10^{23.5}$** (multi-copy direct sum) and **$10^{375.5}$** (single matrix product via finite Schönhage conversion, $3{,}124\times$ smaller in $\log_{10} V$), but stalls at $3\log_6 4 \approx 2.32112$ and cannot approach $9/4$.
 
 ### Exact Boundary of Universality (Can *Any* $9/4$ Algorithm Do Better?)
 
 The bounds depend on which rank certificate or algorithm class is considered:
 
-1. **Conditional across generalized Remark 4.5 iterations (`thm:remark45_universal`):** Under the finite lower-effort and $9/4$-rate hypotheses (a)-(d), $v_k^{4 a_0} > w^{18 b_0}$ and $d = \Omega(\delta^{-2})$ hold even with zero balancing loss ($\Delta_{\mathrm{bal}} = 1$).
-2. **Full-degree Bini rank certificates obeying $r_0 \ge v_0^{9/4}$ (`prop:general_bini_horizon`):** Any full-degree Bini certificate $(h E_\varepsilon + 1) r_0^h < V^\tau$ forces the horizon $V > (h E_\varepsilon + 1)^{1/\delta} \ge (E_\varepsilon + 1)^{1/\delta}$.
+1. **Conditional across generalized Remark 4.5 iterations (`thm:remark45_universal`):** Under the finite lower-effort and $9/4$-rate hypotheses (a)-(d) with fixed $m_{\mathrm{t}} - n_{\mathrm{s}} > 0$ and $n_{\mathrm{s}} = \Omega(\delta^{-1})$, $v_k^{4 a_0} > w^{18 b_0}$ and $d = \Omega(\delta^{-2})$ hold even with zero balancing loss ($\Delta_{\mathrm{bal}} = 1$).
+2. **Full-degree Bini rank certificates achieving target $\tau$ with $r_0 \ge v_0^{9/4}$ (`prop:general_bini_horizon`):** Any full-degree Bini certificate $(h E_\varepsilon + 1) r_0^h < V^\tau$ forces the horizon $V > (h E_\varepsilon + 1)^{1/\delta} \ge (E_\varepsilon + 1)^{1/\delta}$.
 3. **Disproved for arbitrary bilinear algorithms on $[2.324, 3)$ and $[2.350, 3)$ (`thm:disproof_arbitrary`):** Strassen's $2 \times 2$ identity ($V = 2, R = 7$), Pan's $70 \times 70$ algorithm ($V = 70, R = 143{,}640$, $143{,}640^5 < 70^{14}$, below-threshold schoolbook ratio $69^{0.2} < 3$), and chains of single-shot untwisted $\mathrm{Str}_3^{\otimes N}$ identities beat Pass's post-Bini lower bounds for every $\tau \in [2.324, 3)$ and Pass's pre-Bini lower bounds for every $\tau \in [2.350, 3)$.
 4. **Supermultiplicative obstruction for arbitrary algorithms on $(9/4, 2.324)$ (`thm:supermult_obstruction`):** Assuming $\omega_{\mathbb{F}} \le 9/4$, **every** supermultiplicative rank lower bound (including every point in Strassen's asymptotic spectrum and the asymptotic floor $V^{9/4}$) obeys $\Phi(V) \le V^{9/4}$. No such bound can rule out polynomial-size pairs $(V, R^*) = (\mu^4, \mu^9 + 1)$ with $V = O(\delta^{-4/9})$; for example, $V = 81, R^* = 19{,}684$ at $\tau = 2.251$ satisfies $19{,}684 > 81^{9/4} = 19{,}683 = 3 \cdot 81^2$ and $19{,}684^{1000} < 81^{2251}$ (with below-threshold schoolbook ratio $80^{0.749} < 27$). Non-supermultiplicative bounds exclude only small sizes at $\tau = 2.251$: Bläser's $\frac{5}{2}V^2 - 3V$ excludes $3 \le V \le 33$ (including $V = 16$) over every field, and Massarenti-Raviolo's $\frac{8}{3}V^2 - 7V$ extends this to $3 \le V \le 37$ over $\mathbb{C}$ while giving $16{,}929 < 19{,}684$ at $V = 81$.
 
@@ -97,9 +98,9 @@ The integer inequalities, recurrences, universal parameter-domain bounds, and se
   - `7,623` lines total: `7,502` lines across five library modules in `verification/lean/MatMul94/`, `14` lines in `MatMul94.lean`, and `107` lines in `AxiomAudit.lean`.
   - **Zero Mathlib / zero external dependencies**, **zero `sorry`**, **zero custom axioms**, **zero `native_decide`**.
   - All `85` named headline theorems in `AxiomAudit.lean` are verified by `lake env leanchecker --fresh MatMul94` (`EC = 0`) and audited via `#print axioms` strictly within `{propext, Classical.choice, Quot.sound}`.
-  - Analytic asymptotics (Prop. 3.5 local CLT, Thm. 4.2), actual-output non-cancellation in Thm. 3.10(ii), polynomial-interpolation necessity in Prop. 3.6, and tensor-level bilinear constructions are proved in the text rather than formalized in Lean; see Table 5 for the per-result formalization scope.
+  - Analytic asymptotics (Prop. 3.5 local CLT, Thm. 4.2), the realized-degree upper bound in Thm. 3.10(ii), polynomial-interpolation necessity in Prop. 3.6, and tensor-level bilinear constructions are proved in the text rather than formalized in Lean; neither the text nor Lean proves that the top-degree terms of the realized output tensor survive. See Table 5 for the per-result formalization scope.
 - **Numerical Verification (`verification/matmul_9_4_constant_check.py`):**
-  - Pure Python standard library: exact multivariate polynomial ring `PolyQ` over $\mathbb{Q}$, arbitrary-precision integer checks, global branch-and-bound certification of Tables 2-3, exact Lemma 4.3 recurrence verification of Table 4 and the Theorem 4.6 monotonicity chains, and adversarial negative-control mutants on every equation block.
+  - Pure Python standard library: exact multivariate polynomial ring `PolyQ` over $\mathbb{Q}$, arbitrary-precision integer checks, 44-digit outward-rounded decimal interval global branch-and-bound certification of Tables 2-3 and the Theorem 4.6 monotonicity chains, 44-digit interval witness and display-rounding checks for Tables 2-4 (including exact $M_d$ enclosures and OpenAI $5w$ tuples), an exact small Lemma 4.3 recurrence test, and adversarial negative-control mutants on every equation block.
   - Checked for strict backward-only DAG ordering and exact equation-label/line synchronization by `verification/dag_check.py`.
 
 ### Repo Layout

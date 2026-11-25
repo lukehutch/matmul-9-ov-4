@@ -148,10 +148,8 @@ def check_paper(path):
 
 def check_checkfile(path, labels, text):
     src = open(path, encoding="utf-8").read().split("\n")
-    # Label names as the paper defines them: any prefix it uses (eq:, sec:,
-    # sup:, ...), so that a dependency on the supplement is seen too.
-    prefixes = sorted({k.split(":")[0] for k in labels if ":" in k})
-    label_pat = re.compile(r"\b((?:" + "|".join(prefixes) + r"):[\w:.\-]+)")
+    # Match any colon-qualified label token so unknown prefixes are rejected too.
+    label_pat = re.compile(r"\b([A-Za-z][\w.-]*:[\w:.\-]+)")
     bad = []
     blocks = []      # (line in check file, tex line, label)
     for i, ln in enumerate(src, 1):
@@ -183,12 +181,14 @@ def check_checkfile(path, labels, text):
         on = False
         for ln in chunk:
             s = ln.strip()
+            scan = s
             if s.startswith("# Derived from:"):
                 on = True
+                scan = s[len("# Derived from:"):]
             elif on and (not s.startswith("#") or re.match(r"#\s*(Test|Mutant|States):", s)):
                 on = False
             if on:
-                derived += label_pat.findall(s)
+                derived += label_pat.findall(scan)
         for d in derived:
             d = d.rstrip(".:")
             if d not in labels:

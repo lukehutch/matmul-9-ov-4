@@ -255,14 +255,27 @@ Quoted passages below are transcribed from the named primary source (with ASCII 
 - **Verified authors**: Alex Massarenti, Emanuele Raviolo
 - **Verified title**: On the rank of n x n matrix multiplication
 - **Journal**: Preprint (2013; corrected arXiv:1211.6320v2)
-- **DOI**: N/A (note: the earlier Linear Algebra Appl. 438(11):4500-4509 (2013) version inherited the uncorrected Landsberg preprint error term noted in Landsberg2014 Sec. 1; we cite the corrected arXiv:1211.6320v2)
-- **arXiv**: 1211.6320v2 [math.AG]
-- **Source URL**: https://arxiv.org/abs/1211.6320 (submitted LaTeX source read via allpapers)
+- **DOI**: N/A (see published corrigendum `MassarentiRaviolo2014`, DOI 10.1016/j.laa.2013.12.009)
+- **arXiv**: 1211.6320v2 [cs.CC]
+- **Source URL**: https://arxiv.org/abs/1211.6320v2 (submitted LaTeX source read via allpapers)
 - **Claims supported**:
-  - Claim: Over C, establishes R(<n, n, n>) >= (8/3) n^2 - 7n (at p = 2), improving Blaser's (5/2) n^2 - 3n bound for every n >= 24 (and excluding 3 <= n <= 37 at tau = 2.251, while giving 16,929 < 19,684 at n = 81).
+  - Claim: Over C, establishes R(<n, n, n>) >= (8/3) n^2 - 7n (at p = 2), matching Blaser's (5/2) n^2 - 3n at n = 24 and strictly improving it for every n > 24 (excluding 3 <= n <= 37 at tau = 2.251, while giving 16,929 < 19,684 at n = 81).
     Quote: "Finally, for p = 2, with a sligtly different strategy we menage to obtain the lower bound (8/3) n^2 - 7n which improves Blaser's bound for any n >= 24." (`1211.6320.tex`, Abstract L200; Remark 3.4 L638--642)
 - **Status**: VERIFIED
-- **Notes**: Full submitted arXiv LaTeX source (`1211.6320v2`) retrieved and checked.
+- **Notes**: Full submitted arXiv LaTeX source (`1211.6320v2`, primary class `cs.CC`) retrieved and checked.
+
+## MassarentiRaviolo2014
+- **Verified authors**: Alex Massarenti, Emanuele Raviolo
+- **Verified title**: Corrigendum to "The rank of n x n matrix multiplication is at least 3n^2 - 2\sqrt{2}n^{3/2} - 3n" [Linear Algebra Appl. 438 (11) (2013) 4500-4509]
+- **Journal**: Linear Algebra and its Applications, Vol. 445, pp. 369-371 (2014)
+- **DOI**: 10.1016/j.laa.2013.12.009
+- **arXiv**: N/A (companion to arXiv:1211.6320v2)
+- **Source URL**: https://doi.org/10.1016/j.laa.2013.12.009 (open-access PDF retrieved and checked)
+- **Claims supported**:
+  - Claim: Withdraws the uncorrected 2013 LAA bound inherited from the first preprint version of Landsberg and states the corrected bound rk(M_{n,n,n}) >= (8/3) n^2 - 7n (Eq. (0.3), p. 370).
+    Quote: "The main result in [3] is incorrect, because of a mistake in the first version of [2], which was propagated in our paper. For the full and correct version of our paper see [4]." (p. 369; Eq. (0.3), p. 370)
+- **Status**: VERIFIED
+- **Notes**: Published corrigendum PDF verified directly.
 
 ## BCRL1979
 - **Verified authors**: Dario Bini, Milvio Capovani, Francesco Romani, Grazia Lotti

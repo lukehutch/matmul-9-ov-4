@@ -13,7 +13,9 @@ dependencies against matmul_9_4_constant.tex. Exits nonzero on any failure.
 """
 from __future__ import annotations
 
+from decimal import Decimal as _Dec, Context as _DecCtx, ROUND_FLOOR as _RFL, ROUND_CEILING as _RCL, ROUND_HALF_EVEN as _RNE
 from fractions import Fraction
+from functools import lru_cache
 import itertools
 import math
 import random
@@ -1137,193 +1139,363 @@ boolcheck("exact integer Lambda * 140^2 * 6^(4*139) <= 8^(4*139) (zero float rou
           lam_w * (140 ** 2) * (6 ** (4 * 139)) <= 8 ** (4 * 139))
 boolcheck("MUTANT REJECTED: omitting -2*ln(d+1) overstates lambda_ub", 4 * 139 * math.log(8 / 6) > lam_ub_6_139 + 9.0)
 
-eq("eq:sharp_k_lnLam_lb", 670, "Globally certified Tables 2-3 universal lower bounds & exact integer witnesses")
-check("Table 2 tau=2.800 witness log10(v_k) matches 7927.63", log_vk_w / math.log(10.0), 7927.63, rtol=1e-4)
+eq("eq:sharp_k_lnLam_lb", 670, "44-digit outward-rounded interval global LB certification & exact integer witnesses (Tables 2-3)")
 
-def _exact_ln_w(cc: int, dd: int) -> float:
-    if dd <= 500:
-        ww = ((cc + 2) ** (2 * dd)) // (dd + 1)
-        return math.log(ww) if ww >= 1 else -1e9
-    return 2.0 * dd * math.log(cc + 2) - math.log(dd + 1) - 1e-12
+# ============================================================================
+# 44-DIGIT OUTWARD-ROUNDED DECIMAL INTERVAL ARITHMETIC (PURE STDLIB)
+# ============================================================================
+_ILO = _DecCtx(prec=44, rounding=_RFL)
+_IHI = _DecCtx(prec=44, rounding=_RCL)
+_INE = _DecCtx(prec=44, rounding=_RNE)
 
-def _slope_c(tau: float, cc: float) -> float:
-    return 4.0 * tau * math.log((cc + 2.0) / cc) - 6.0 * math.log((cc + 2.0) / (cc - 1.0))
 
-def _box2d_pre_lb(tau: float, c1: int, c2: int, d1: int, d2: int) -> float:
-    # Rigorous d-normalized lower bound on pre-Bini log10(v_k) over [c1, c2] x [d1, d2].
-    c_peak = tau / (tau - 2.25)
-    s_max = max(_slope_c(tau, float(c1)), _slope_c(tau, float(c2)))
-    if c1 < c_peak < c2:
-        s_max = max(s_max, _slope_c(tau, c_peak))
-    del_per_d_max = s_max - (2.0 * tau * math.log(d2 + 1) + math.log(64.0)) / d2
-    if del_per_d_max <= 0.0:
-        return 1e99
-    lam_per_d_min = 4.0 * math.log((c2 + 2) / c2) - 2.0 * math.log(d1 + 1) / d1
-    if lam_per_d_min <= 0.0:
-        return 0.0
-    ratio_max = del_per_d_max / lam_per_d_min
-    ln_w1 = _exact_ln_w(c1, d1)
-    u_w1 = ln_w1 / d1
-    j0_1, j0_2 = (c1 - 1) // 3, (c2 - 1) // 3
-    ln_rho1 = math.log((c1 + 2) / (c1 - 1))
-    BL = max(0.0, math.log(2 * j0_1 + 1) - j0_2 * ln_rho1) if ((9.0 - 2.0 * tau) * u_w1 / del_per_d_max >= j0_2) else 0.0
-    return (2.0 * ln_w1 + ((9.0 - 2.0 * tau) * ln_w1 + 6.0 * d1 * BL) / ratio_max) / math.log(10.0)
+class _Iv:
+    """Outward-rounded 44-digit Decimal interval [a, b]."""
+    __slots__ = ("a", "b")
 
-def _box2d_post_lb(tau: float, c1: int, c2: int, d1: int, d2: int) -> float:
-    # Rigorous d-normalized lower bound on post-Bini log10(V) over [c1, c2] x [d1, d2].
-    c_peak = tau / (tau - 2.25)
-    s_max = max(_slope_c(tau, float(c1)), _slope_c(tau, float(c2)))
-    if c1 < c_peak < c2:
-        s_max = max(s_max, _slope_c(tau, c_peak))
-    del_per_d_max = s_max - (2.0 * tau * math.log(d2 + 1) + math.log(64.0)) / d2
-    if del_per_d_max <= 0.0:
-        return 1e99
-    ln_w1 = _exact_ln_w(c1, d1)
-    u_w1 = ln_w1 / d1
-    j0_1, j0_2 = (c1 - 1) // 3, (c2 - 1) // 3
-    ln_rho1 = math.log((c1 + 2) / (c1 - 1))
-    ln_rho2 = math.log((c2 + 2) / (c2 - 1))
-    BL = max(0.0, math.log(2 * j0_1 + 1) - j0_2 * ln_rho1) if ((9.0 - 2.0 * tau) * u_w1 / del_per_d_max >= j0_2) else 0.0
-    K_lo = ((9.0 - 2.0 * tau) * u_w1 + 6.0 * BL) / del_per_d_max
-    a1 = 2.0 * u_w1
-    b1 = (6.0 * ln_rho2 + math.log(64.0) / d2) / tau
-    ln_S1_per_d = (math.log(3.0 * (2 * d1 + 1)) + ln_w1 + math.log1p(-2.0 / (3.0 * (2 * d1 + 1) * math.exp(min(ln_w1, 500.0))))) / d1 if (c1 == c2 and d1 == d2) else u_w1
-    if K_lo > 0.5:
-        k_star = K_lo + math.sqrt((K_lo - 0.5) * (K_lo + a1 / b1))
-        val = (2.0 * k_star - 1.0) * (a1 + b1 * k_star) / (k_star - K_lo)
-    else:
-        val = (a1 + b1) / max(1e-12, 1.0 - K_lo)
-    return (ln_S1_per_d / del_per_d_max) * d1 * val / math.log(10.0)
+    def __init__(self, a, b=None):
+        self.a = _Dec(str(a)) if not isinstance(a, _Dec) else a
+        self.b = self.a if b is None else (_Dec(str(b)) if not isinstance(b, _Dec) else b)
 
-def _d_lo_analytic(tau: float, cc: int) -> int:
-    delta = tau - 2.25
-    d_lo = max(1, int(math.ceil(cc * 3.0 / (6.0 * delta))))
-    for _ in range(15):
-        d_lo = max(d_lo, int(math.ceil(cc * (3.0 + tau * math.log2(d_lo + 1)) / (6.0 * delta))))
-    return d_lo
+    def __add__(self, other):
+        o = _iv(other)
+        return _Iv(_ILO.add(self.a, o.a), _IHI.add(self.b, o.b))
 
-def certify_global_pass_threshold(tau: float, mode: str, target: float) -> bool:
-    """Global 2D branch-and-bound proof that the Pass lower envelope is >= target over ALL (c, d) in N_{>=2} x N_{>=1}."""
-    delta = tau - 2.25
-    c_min = 2
-    while 1.5 * math.log((c_min + 2) / (c_min - 1)) / math.log((c_min + 2) / c_min) >= tau:
-        c_min += 1
-    c_hi = max(c_min + 10, int(math.ceil(tau / delta)) + 2)
-    while True:
-        dl = _d_lo_analytic(tau, c_hi)
-        ln_wl = _exact_ln_w(c_hi, dl)
-        pf = (4.5 / delta) * ln_wl / math.log(10.0)
-        fl = pf if mode == "pre" else pf * (ln_wl / (dl * _slope_c(tau, float(c_hi))))
-        if fl >= target:
-            break
-        c_hi = int(c_hi * 1.5) + 5
-    d_lo_min = _d_lo_analytic(tau, c_min)
-    if mode == "pre":
-        d_hi_max = max(d_lo_min + 10, int(math.ceil(target * math.log(10.0) * delta / (9.0 * math.log(c_min + 2)))) + 100)
-        fn = _box2d_pre_lb
-    else:
-        s_max_all = _slope_c(tau, max(float(c_min), tau / delta))
-        d_hi_max = max(d_lo_min + 10, int(math.ceil(target * math.log(10.0) * delta * s_max_all / (9.0 * (math.log(c_min + 2) ** 2)))) + 100)
-        fn = _box2d_post_lb
-    stack = [(c_min, c_hi, d_lo_min, d_hi_max)]
-    while stack:
-        c1, c2, d1, d2 = stack.pop()
-        d1_eff = max(d1, _d_lo_analytic(tau, c1))
-        if d1_eff > d2:
-            continue
-        lb = fn(tau, c1, c2, d1_eff, d2)
-        if lb >= target:
-            continue
-        if c1 == c2 and d1_eff == d2:
-            return False
-        if c2 - c1 <= 2 and d2 - d1_eff <= 2:
-            for cc in range(c1, c2 + 1):
-                for dd in range(d1_eff, d2 + 1):
-                    if fn(tau, cc, cc, dd, dd) < target:
-                        return False
-            continue
-        if (c2 - c1) / max(1, c1) >= (d2 - d1_eff) / max(1, d1_eff) and c2 > c1:
-            cm = (c1 + c2) // 2
-            stack.append((cm + 1, c2, d1_eff, d2))
-            stack.append((c1, cm, d1_eff, d2))
-        elif d2 > d1_eff:
-            dm = (d1_eff + d2) // 2
-            stack.append((c1, c2, dm + 1, d2))
-            stack.append((c1, c2, d1_eff, dm))
+    __radd__ = __add__
+
+    def __sub__(self, other):
+        o = _iv(other)
+        return _Iv(_ILO.subtract(self.a, o.b), _IHI.subtract(self.b, o.a))
+
+    def __rsub__(self, other):
+        return _iv(other) - self
+
+    def __mul__(self, other):
+        o = _iv(other)
+        if self.a >= 0 and o.a >= 0:
+            return _Iv(_ILO.multiply(self.a, o.a), _IHI.multiply(self.b, o.b))
+        ps_lo = (_ILO.multiply(x, y) for x in (self.a, self.b) for y in (o.a, o.b))
+        ps_hi = (_IHI.multiply(x, y) for x in (self.a, self.b) for y in (o.a, o.b))
+        return _Iv(min(ps_lo), max(ps_hi))
+
+    __rmul__ = __mul__
+
+    def __truediv__(self, other):
+        o = _iv(other)
+        assert o.a > 0, f"Division by non-positive interval {o}"
+        if self.a >= 0:
+            return _Iv(_ILO.divide(self.a, o.b), _IHI.divide(self.b, o.a))
+        return self * _Iv(_ILO.divide(_Dec(1), o.b), _IHI.divide(_Dec(1), o.a))
+
+    def __rtruediv__(self, other):
+        return _iv(other) / self
+
+    def ln(self):
+        assert self.a > 0
+        return _Iv(_INE.next_minus(_INE.ln(self.a)), _INE.next_plus(_INE.ln(self.b)))
+
+    def sqrt(self):
+        assert self.a >= 0
+        lo_v = _Dec(0) if self.a == 0 else _INE.next_minus(_INE.sqrt(self.a))
+        return _Iv(lo_v, _INE.next_plus(_INE.sqrt(self.b)))
+
+    def __repr__(self):
+        return f"[{self.a}, {self.b}]"
+
+
+def _iv(x) -> _Iv:
+    return x if isinstance(x, _Iv) else _Iv(x)
+
+
+@lru_cache(None)
+def _ilg(n: int) -> _Iv:
+    return _Iv(_Dec(n)).ln()
+
+
+@lru_cache(None)
+def _ilr(a: int, b: int) -> _Iv:
+    return (_Iv(a) / _Iv(b)).ln()
+
+
+_IL10 = _ilg(10)
+_IL64 = _ilg(64)
+_IL2 = _ilg(2)
+_ILOG2_7 = _ilg(7) / _IL2
+_IPI = _Iv(_Dec("3.14159265358979323846264338327950288419716"),
+           _Dec("3.14159265358979323846264338327950288419717"))
+_IHALF_LN_2PI = (_Iv(2) * _IPI).ln() / 2
+
+
+def _ln_fact_iv(n: int) -> _Iv:
+    """Robbins (1955) exact factorial enclosure: 1/(12n+1) < ln(n!) - Stirling < 1/(12n)."""
+    if n <= 1:
+        return _Iv(0)
+    N = _Iv(n)
+    base = (N + _Iv("0.5")) * N.ln() - N + _IHALF_LN_2PI
+    return base + _Iv((_Iv(1) / (12 * n + 1)).a, (_Iv(1) / (12 * n)).b)
+
+
+def _ln_Md_iv(c: int, d: int) -> _Iv:
+    """Exact/Robbins+log-concave geometric-tail interval enclosure of ln M_d(c) (zero Gaussian approximation)."""
+    if d <= 200:
+        exact_m = sum((math.comb(d, hh) * ((c + 1) ** (d - hh))) ** 2 for hh in range(d + 1))
+        return _Iv(_Dec(exact_m)).ln()
+    h_star = max(0, min(d, (d + 1) // (c + 2)))
+    sigma = math.sqrt(max(1.0, d / (c + 2.0) * (1.0 - 1.0 / (c + 2.0))))
+    W = max(12, int(math.ceil(11.0 * sigma)))
+    h1, h2 = max(0, h_star - W), min(d, h_star + W)
+    lc1 = _ilg(c + 1)
+    l_peak = 2 * (_ln_fact_iv(d) - _ln_fact_iv(h_star) - _ln_fact_iv(d - h_star) + (d - h_star) * lc1)
+    total = _Iv(1)
+    cur = _Iv(1)
+    for hh in range(h_star, h2):
+        r = _Iv(d - hh) / _Iv((hh + 1) * (c + 1))
+        cur = cur * (r * r)
+        total = total + cur
+    tail_hi = _Iv(0)
+    if h2 < d:
+        rn = _Iv(d - h2) / _Iv((h2 + 1) * (c + 1))
+        rn2 = rn * rn
+        assert rn2.b < 1
+        tail_hi = tail_hi + cur * rn2 / (1 - rn2)
+    cur = _Iv(1)
+    for hh in range(h_star, h1, -1):
+        r = _Iv(hh * (c + 1)) / _Iv(d - hh + 1)
+        cur = cur * (r * r)
+        total = total + cur
+    if h1 > 0:
+        rn = _Iv(h1 * (c + 1)) / _Iv(d - h1 + 1)
+        rn2 = rn * rn
+        assert rn2.b < 1
+        tail_hi = tail_hi + cur * rn2 / (1 - rn2)
+    return l_peak + _Iv(total.a, (total + tail_hi).b).ln()
+
+
+def _wlogs_iv(c: int, d: int) -> _Iv:
+    """Outward-rounded enclosure of ln(floor((c+2)^(2d)/(d+1)))."""
+    if d < 100:
+        return _Iv(_Dec(((c + 2) ** (2 * d)) // (d + 1))).ln()
+    v = 2 * d * _ilg(c + 2) - _ilg(d + 1)
+    # For d >= 100, (d+1)/(c+2)^(2d) <= 101 / 4^200 < 1e-118 < 1e-99.
+    return _Iv(_ILO.subtract(v.a, _Dec("1e-99")), v.b)
+
+
+@lru_cache(None)
+def _ubox_iv(c: int, d: int) -> _Iv:
+    if d >= 100:
+        return _wlogs_iv(c, d) / d
+    eps = _Iv(d + 1) / _Iv((c + 2) ** (2 * d))
+    return 2 * _ilg(c + 2) - _ilg(d + 1) / d + (1 - eps).ln() / d
+
+
+def _ln_2Lk_m1_iv(c: int, k: int) -> _Iv:
+    """Outward-rounded enclosure of ln(2*L_k(c) - 1): exact recurrence up to 50000, Thm. 3.9 affine bounds above."""
+    steps = min(k, 50000)
+    L = 1
+    for _ in range(steps):
+        L += (3 * L - 1 + c - 2) // (c - 1)
+    if k <= 50000:
+        return _Iv(_Dec(2 * L - 1)).ln()
+    rem = k - steps
+    ln_rho = _ilr(c + 2, c - 1)
+    lo_v = (_Iv(2) * (_Iv(_Dec(L)) - _Iv(1) / _Iv(3))).ln() + rem * ln_rho
+    hi_v = (_Iv(2) * (_Iv(_Dec(L)) + _Iv(c - 3) / _Iv(3))).ln() + rem * ln_rho
+    return _Iv(lo_v.a, hi_v.b)
+
+
+def _matches_display(val_iv: _Iv, displayed_str: str) -> bool:
+    """Check that interval val_iv lies strictly inside the rounding cell of displayed_str (half-ULP)."""
+    d_val = _Dec(displayed_str)
+    exp = d_val.as_tuple().exponent
+    half_ulp = _Dec(5) * (_Dec(10) ** (exp - 1))
+    cell_lo = _ILO.subtract(d_val, half_ulp)
+    cell_hi = _IHI.add(d_val, half_ulp)
+    return val_iv.a >= cell_lo and val_iv.b <= cell_hi
+
+
+def certify_global_pass_threshold(tau_val, mode: str, threshold) -> bool:
+    """Rigorous 44-digit outward-rounded interval 2D branch-and-bound proof that
+    the Pass lower envelope is >= threshold over ALL (c, d) in N_{>=2} x N_{>=1}.
+    """
+    t = _iv(tau_val)
+    target = _iv(threshold).b
+    delt = t - _Iv("2.25")
+    peak = t / delt
+    p_slope = 4 * t * ((peak + 2) / peak).ln() - 6 * ((peak + 2) / (peak - 1)).ln()
+
+    @lru_cache(None)
+    def s_iv(cc: int) -> _Iv:
+        return 4 * t * _ilr(cc + 2, cc) - 6 * _ilr(cc + 2, cc - 1)
+
+    @lru_cache(None)
+    def d_lo_analytic(cc: int) -> int:
+        x = 1
+        for _ in range(16):
+            rhs_lo = (_Iv(cc) * (3 + t * _ilg(x + 1) / _IL2) / (6 * delt)).a
+            x = max(x, int(rhs_lo) + 1)
+        return x
+
+    def tail_lb(cc: int, dd: int, smax_hi: _Dec) -> _Dec:
+        u = _ubox_iv(cc, dd).a
+        z = _Iv("4.5") / delt * _Iv(u) * dd / _IL10
+        return (z if mode == "pre" else z * _Iv(u) / _Iv(smax_hi)).a
+
+    c0 = 2
+    while s_iv(c0).b <= 0:
+        c0 += 1
+    cmax = int(peak.b) + 3
+    while tail_lb(cmax, d_lo_analytic(cmax), s_iv(cmax).b) < target:
+        cmax = cmax * 3 // 2 + 5
+    dmax = d_lo_analytic(c0) + 10
+    while tail_lb(c0, dmax, p_slope.b) < target:
+        dmax *= 2
+
+    def box_lb(x: int, y: int, l: int, r: int) -> _Dec:
+        sm = max(s_iv(x).b, s_iv(y).b)
+        if x <= peak.b and peak.a <= y:
+            sm = max(sm, p_slope.b)
+        du = (_Iv(sm) - (2 * t * _ilg(r + 1) + _IL64) / r).b
+        if du <= 0:
+            return _Dec("Infinity")
+        u = (_wlogs_iv(x, l) / l if (x == y and l == r) else _ubox_iv(x, l)).a
+        base = ((9 - 2 * t) * _Iv(u)).a
+        j1, j2 = (x - 1) // 3, (y - 1) // 3
+        bl = (max(_Dec(0), (_ilg(2 * j1 + 1) - j2 * _ilr(x + 2, x - 1)).a)
+              if (_Iv(base) / _Iv(du)).a >= j2 else _Dec(0))
+        numer = (_Iv(base) + 6 * _Iv(bl)).a
+        if mode == "pre":
+            lam = (4 * _ilr(y + 2, y) - 2 * _ilg(l + 1) / l).a
+            if lam <= 0:
+                return _Dec(0)
+            return (_Iv(l) * (2 * _Iv(u) + _Iv(numer) * _Iv(lam) / _Iv(du)) / _IL10).a
+        a = 2 * _Iv(u)
+        b = (6 * _ilr(y + 2, y - 1) + _IL64 / r) / t
+        K = _Iv((_Iv(numer) / _Iv(du)).a)
+        if K.a >= _Dec("0.5"):
+            val = 2 * (a + b * K) + (2 * K - 1) * b
+            if K.a > _Dec("0.5"):
+                val = val + 2 * (2 * b * (2 * K - 1) * (a + b * K)).sqrt()
         else:
-            cm = (c1 + c2) // 2
-            stack.append((cm + 1, c2, d1_eff, d2))
-            stack.append((c1, cm, d1_eff, d2))
+            val = (a + b) / (1 - K)
+        us = _Iv(u)
+        if x == y and l == r:
+            if l < 100:
+                us = _Iv(_Dec(3 * (2 * l + 1) * (((x + 2) ** (2 * l)) // (l + 1)) - 2)).ln() / l
+            else:
+                us = (_ilg(3 * (2 * l + 1)) + _wlogs_iv(x, l) - _Iv("1e-99")) / l
+        return (us / _Iv(du) * l * val / _IL10).a
+
+    stack = [(c0, cmax, d_lo_analytic(c0), dmax)]
+    while stack:
+        x, y, l, r = stack.pop()
+        l = max(l, d_lo_analytic(x))
+        if l > r or box_lb(x, y, l, r) >= target:
+            continue
+        if x == y and l == r:
+            return False
+        if y > x and (y - x) * l >= (r - l) * x:
+            m = (x + y) // 2
+            stack.extend(((m + 1, y, l, r), (x, m, l, r)))
+        else:
+            m = (l + r) // 2
+            stack.extend(((x, y, m + 1, r), (x, y, l, m)))
     return True
 
-def _exact_ln_2Lk_m1(cc: int, kk: int) -> float:
-    L = 1
-    steps = min(kk, 50000)
-    for _ in range(steps):
-        L = L + (3 * L - 1 + cc - 2) // (cc - 1)
-    if kk <= 50000:
-        return math.log(2 * L - 1)
-    rho = (cc + 2) / (cc - 1)
-    shift = (cc - 3) / 3.0
-    return math.log(2.0) + math.log(L + shift) + (kk - steps) * math.log(rho)
+
+def _cert_pass_witness(tau_str: str, mode: str, c: int, d: int, k: int, h: int = 1) -> tuple[bool, _Iv]:
+    """44-digit outward-rounded interval verification of exact Pass-family witnesses.
+    mode in {'pre', 'post', 'opt', 'openai'}.
+    """
+    t = _Iv(tau_str)
+    if mode in ("pre", "post"):
+        ln_w = _wlogs_iv(c, d)
+        ln_rc = _IL64
+        ln_S = _ilg(3 * (2 * d + 1)) + ln_w
+    elif mode == "opt":
+        ln_w = _ln_Md_iv(c, d)
+        ln_rc = _IL64
+        ln_S = _ilg(3 * (2 * d + 1)) + ln_w
+    elif mode == "openai":
+        ln_w = _wlogs_iv(c, d)
+        ln_rc = _ilg(15625)
+        ln_S = _ilg(6 * (2 * d + 1)) + 2 * ln_w
+    else:
+        raise ValueError(mode)
+    ln_Q = ln_w - 2 * d * _ilg(c)
+    if ln_Q.a > 50:
+        ln_lam = _Iv(_ILO.subtract((2 * ln_Q).a, _Dec("1e-18")), (2 * ln_Q).b)
+    else:
+        ww = (sum((math.comb(d, hh) * ((c + 1) ** (d - hh))) ** 2 for hh in range(d + 1))
+              if mode == "opt" else ((c + 2) ** (2 * d)) // (d + 1))
+        ln_lam = _Iv(_Dec((ww // (c ** (2 * d))) ** 2)).ln()
+    ln_vk = 2 * ln_w + k * ln_lam
+    ln_2Lk1 = _ln_2Lk_m1_iv(c, k)
+    ln_Ek = k * ln_rc + 9 * ln_w + 6 * d * ln_2Lk1
+    if mode == "pre":
+        return ln_Ek.b < (t * ln_vk).a, ln_vk / _IL10
+    # Certified sufficient upper bound D = 2 * S^(2k); ln(h*D + 1) <= ln(2*h) + 2*k*ln_S + 1e-20
+    ln_hDp1 = _Iv(_Dec(2 * h)).ln() + 2 * k * ln_S + _Iv(0, _Dec("1e-20"))
+    ln_R = ln_hDp1 + h * ln_Ek
+    ln_V = h * ln_vk
+    return ln_R.b < (t * ln_V).a, ln_V / _IL10
+
 
 table2_rows = [
-    (2.800, 7197.27, 7927.63, (6, 139, 114)),
-    (2.695, 15809.49, 17442.54, (6, 207, 169)),
-    (2.500, 126725.43, 137617.22, (12, 719, 719)),
-    (2.371, 1671405.33, 1770235.12, (24, 3392, 3769)),
-    (2.321, 10782969.44, 11348489.01, (42, 10917, 12900)),
-    (2.300, 36254552.34, 37963961.01, (57, 23003, 27605)),
-    (2.260, 8.439e9, 8.719e9, (304, 763002, 1003639)),
-    (2.251, 1.624e13, 1.661e13, (3032, 102600000, 141345029)),
+    ("2.800", "7197.27", "7927.63", (6, 139, 114)),
+    ("2.695", "15809.49", "17442.54", (6, 207, 169)),
+    ("2.500", "126725.43", "137617.22", (12, 719, 719)),
+    ("2.371", "1671405.33", "1770235.12", (24, 3392, 3769)),
+    ("2.321", "10782969.44", "11348489.01", (42, 10917, 12900)),
+    ("2.300", "36254552.34", "37963961.01", (57, 23003, 27605)),
+    ("2.260", "8.439e9", "8.719e9", (304, 763002, 1003639)),
+    ("2.251", "1.624e13", "1.661e13", (3032, 102600000, 141345029)),
 ]
 table3_rows = [
-    (2.800, 9.504e5, 1.173e6, (5, 219, 150, 61), 1.900e5, 6.990e3, 1.140e6),
-    (2.695, 3.213e6, 3.755e6, (6, 335, 236, 95), 9.801e5, 3.610e5, 4.193e6),
-    (2.500, 9.304e7, 1.046e8, (10, 1073, 866, 356), 4.652e7, 2.859e7, 1.395e8),
-    (2.371, 6.149e9, 6.726e9, (21, 5052, 4756, 1775), 3.868e9, 2.683e9, 1.001e10),
-    (2.321, 1.303e11, 1.403e11, (36, 16021, 16123, 5793), 8.852e10, 6.340e10, 2.189e11),
-    (2.300, 9.563e11, 1.020e12, (51, 34246, 35518, 12558), 6.694e11, 4.852e11, 1.625e12),
-    (2.260, 7.657e15, 7.986e15, (255, 1107000, 1253000, 424300), 5.666e15, 4.191e15, 1.332e16),
-    (2.251, 2.079e21, 2.145e21, (2546, 149000000, 178740000, 59048000), 1.557e21, 1.156e21, 3.636e21),
+    ("2.800", "9.504e5", "1.173e6", (5, 219, 150, 61), "1.900e5", "6.990e3", "1.140e6"),
+    ("2.695", "3.213e6", "3.755e6", (6, 335, 236, 95), "9.801e5", "3.610e5", "4.193e6"),
+    ("2.500", "9.304e7", "1.046e8", (10, 1073, 866, 356), "4.652e7", "2.859e7", "1.395e8"),
+    ("2.371", "6.149e9", "6.726e9", (21, 5052, 4756, 1775), "3.868e9", "2.683e9", "1.001e10"),
+    ("2.321", "1.303e11", "1.403e11", (36, 16021, 16123, 5793), "8.852e10", "6.340e10", "2.189e11"),
+    ("2.300", "9.563e11", "1.020e12", (51, 34246, 35518, 12558), "6.694e11", "4.852e11", "1.625e12"),
+    ("2.260", "7.657e15", "7.986e15", (255, 1107000, 1253000, 424300), "5.666e15", "4.191e15", "1.332e16"),
+    ("2.251", "2.079e21", "2.145e21", (2546, 149000000, 178740000, 59048000), "1.557e21", "1.156e21", "3.636e21"),
 ]
-for (tv, pre_lb_p, pre_ub_p, (cw, dw, kw)), (_, post_lb_p, post_ub_p, (cp, dp, kp, hp), csb_p, cstr_p, cpad_p) in zip(table2_rows, table3_rows):
-    boolcheck(f"Table 2 tau={tv}: globally certified pre-Bini LB >= {pre_lb_p}",
-              certify_global_pass_threshold(tv, "pre", pre_lb_p))
-    boolcheck(f"Table 3 tau={tv}: globally certified post-Bini LB >= {post_lb_p:.4g}",
-              certify_global_pass_threshold(tv, "post", post_lb_p))
-    # Verify exact pre-Bini witness passes Pass validity
-    ln_ww = _exact_ln_w(cw, dw)
-    ln_lam_w = 2.0 * (ln_ww - 2.0 * dw * math.log(cw))
-    ln_vk_w = 2.0 * ln_ww + kw * ln_lam_w
-    ln_Ek_w = kw * math.log(64.0) + 9.0 * ln_ww + 6.0 * dw * _exact_ln_2Lk_m1(cw, kw)
-    boolcheck(f"Table 2 tau={tv} exact witness {(cw, dw, kw)} passes E_k < v_k^tau", ln_Ek_w < tv * ln_vk_w)
-    check(f"Table 2 tau={tv} witness log10(v_k) matches {pre_ub_p}", ln_vk_w / math.log(10.0), pre_ub_p, rtol=1e-3)
-    # Verify exact post-Bini witness passes stronger 2*S^(2k) certificate!
-    ln_wp = _exact_ln_w(cp, dp)
-    ln_lam_p = 2.0 * (ln_wp - 2.0 * dp * math.log(cp))
-    ln_vk_p = 2.0 * ln_wp + kp * ln_lam_p
-    ln_Ek_p = kp * math.log(64.0) + 9.0 * ln_wp + 6.0 * dp * _exact_ln_2Lk_m1(cp, kp)
-    ln_Sp = math.log(3.0 * (2 * dp + 1)) + ln_wp
-    ln_Rpost = math.log(2.0 * hp) + 2.0 * kp * ln_Sp + hp * ln_Ek_p
-    boolcheck(f"Table 3 tau={tv} exact witness {(cp, dp, kp, hp)} passes 2*S^(2k) Bini certificate",
-              ln_Rpost < tv * hp * ln_vk_p)
-    check(f"Table 3 tau={tv} witness log10(V) matches {post_ub_p}", hp * ln_vk_p / math.log(10.0), post_ub_p, rtol=1e-3)
-    # Zero-slack direct global certification of downward-rounded C_sb, C_Str, C_pad
-    boolcheck(f"Table 3 C_sb globally certified at tau={tv}",
-              certify_global_pass_threshold(tv, "post", csb_p / (3.0 - tv)))
-    boolcheck(f"Table 3 C_Str globally certified at tau={tv}",
-              certify_global_pass_threshold(tv, "post", cstr_p / (log2_7 - tv)))
-    boolcheck(f"Table 3 C_pad globally certified at tau={tv}",
-              certify_global_pass_threshold(tv, "post", cpad_p / (4.0 - tv)))
+for (ts, pre_lb_s, pre_ub_s, (cw, dw, kw)), (_, post_lb_s, post_ub_s, (cp, dp, kp, hp), csb_s, cstr_s, cpad_s) in zip(table2_rows, table3_rows):
+    t_iv = _Iv(ts)
+    boolcheck(f"Table 2 tau={ts}: 44-digit interval certified pre-Bini LB >= {pre_lb_s}",
+              certify_global_pass_threshold(ts, "pre", pre_lb_s))
+    boolcheck(f"Table 3 tau={ts}: 44-digit interval certified post-Bini LB >= {post_lb_s}",
+              certify_global_pass_threshold(ts, "post", post_lb_s))
+    ok_pre, lv_pre = _cert_pass_witness(ts, "pre", cw, dw, kw)
+    boolcheck(f"Table 2 tau={ts} witness {(cw, dw, kw)} interval-certified valid & rounds to {pre_ub_s}",
+              ok_pre and _matches_display(lv_pre, pre_ub_s))
+    ok_post, lv_post = _cert_pass_witness(ts, "post", cp, dp, kp, hp)
+    boolcheck(f"Table 3 tau={ts} witness {(cp, dp, kp, hp)} interval-certified 2*S^(2k) & rounds to {post_ub_s}",
+              ok_post and _matches_display(lv_post, post_ub_s))
+    # Finite-size corrected C_sb ((V-1)), C_Str ((V-1)/2 with +log10(2)), C_pad (V+1):
+    # For V > 10^100, (V +/- 1) log loss is < 1e-98 << 1e-35.
+    req_sb = _Iv(csb_s) / (3 - t_iv) + _Iv("1e-35")
+    req_str = _Iv(cstr_s) / (_ILOG2_7 - t_iv) + _IL2 / _IL10 + _Iv("1e-35")
+    req_pad = _Iv(cpad_s) / (4 - t_iv) + _Iv("1e-35")
+    boolcheck(f"Table 3 C_sb interval-certified at tau={ts} (with V-1 loss)",
+              certify_global_pass_threshold(ts, "post", req_sb))
+    boolcheck(f"Table 3 C_Str interval-certified at tau={ts} (with (V-1)/2 loss)",
+              certify_global_pass_threshold(ts, "post", req_str))
+    boolcheck(f"Table 3 C_pad interval-certified at tau={ts} (with V+1 loss)",
+              certify_global_pass_threshold(ts, "post", req_pad))
 
-# Negative-control mutants on global certifier: overstated thresholds MUST be refuted!
+# Negative-control mutants on global interval certifier & display rounding:
 boolcheck("MUTANT REJECTED: overstated pre-Bini LB 7197.30 at tau=2.800 refuted",
-          not certify_global_pass_threshold(2.800, "pre", 7197.30))
+          not certify_global_pass_threshold("2.800", "pre", "7197.30"))
+boolcheck("MUTANT REJECTED: float64 ULP overstatement 7197.282318937111 at tau=2.800 refuted",
+          not certify_global_pass_threshold("2.800", "pre", "7197.282318937111"))
 boolcheck("MUTANT REJECTED: overstated post-Bini LB 7.658e15 at tau=2.260 refuted",
-          not certify_global_pass_threshold(2.260, "post", 7.658e15))
+          not certify_global_pass_threshold("2.260", "post", "7.658e15"))
 boolcheck("MUTANT REJECTED: overstated post-Bini LB 2.080e21 at tau=2.251 refuted",
-          not certify_global_pass_threshold(2.251, "post", 2.080e21))
+          not certify_global_pass_threshold("2.251", "post", "2.080e21"))
+_, _lv_2800_chk = _cert_pass_witness("2.800", "pre", 6, 139, 114)
+boolcheck("MUTANT REJECTED: 1-last-digit display mutant 7927.64 rejected (exact 7927.63)",
+          not _matches_display(_lv_2800_chk, "7927.64"))
 
 lam_ub_136 = 4 * 136 * math.log(8 / 6) - 2 * math.log(137)
 del_ub_136 = 2.8 * lam_ub_136 - 6 * 136 * math.log(8 / 5) - math.log(64)
@@ -1334,14 +1506,14 @@ numutant("dropping ceiling boost B_L understates sharp LB", lb_no_BL, 7197.27, r
 # ============================================================================
 # SECTION 4.3: FINITE DIRECT-SUM TO SINGLE-MATRIX CONVERSION & TABLE 4
 # ============================================================================
-part("SECTION 4.3: FINITE DIRECT-SUM TO SINGLE-MATRIX CONVERSION")
+part("SECTION 4.3: FINITE DIRECT-SUM TO SINGLE-MATRIX CONVERSION & FULL TABLE 4")
 
 # eq:finite_schonhage, eq:schonhage_induct (L696, L704)
-# States: R_{r_Sch} <= P * (R_ex/P + 1)^{r_Sch}; verifies Table 4 untwisted Str_3 numbers.
-# Derived from: eq:V_post_def, eq:bini_condition
-# Test: Runs exact recurrence R_{j+1} = ceil(R_j/P) * R_ex and verifies Str_3 sub-Strassen.
-# Mutant: Omitting +1 in (R_ex/P + 1) fails when P does not divide R_ex.
-eq("eq:finite_schonhage", 696, "Finite direct-sum to single-matrix rank bound & full Table 4 Str_3 audit")
+# States: R_{r_Sch} <= P * (R_ex/P + 1)^{r_Sch}; certifies ALL four Table 4 columns (OpenAI 5w, Literal Pass, Opt. Pass M_d, Str_3).
+# Derived from: eq:V_post_def, eq:bini_condition, eq:Md_exact, eq:openai_tight_deg
+# Test: Runs exact recurrence R_{j+1} = ceil(R_j/P) * R_ex, 44-digit interval checks for all 12 OpenAI 5w / Opt. Pass tuples, and Str_3 checks.
+# Mutant: Omitting +1 in (R_ex/P + 1) fails; h-1 fails for tight Table 4 witnesses; (22,3,7) fails at 2.800.
+eq("eq:finite_schonhage", 696, "Finite direct-sum conversion & full 4-column Table 4 44-digit interval audit")
 P_ex, Rex_ex = 7, 25
 Rj = Rex_ex
 B_ex = Fraction(Rex_ex, P_ex) + 1
@@ -1351,6 +1523,54 @@ for j in range(1, 8):
         ok_sch = False
     Rj = ((Rj + P_ex - 1) // P_ex) * Rex_ex
 boolcheck("exact recurrence R_j <= P*(R_ex/P + 1)^j holds for j=1..7", ok_sch)
+
+# Verify shifted OpenAI 5w pole budget on concrete M = 2..15:
+# Shifted weights: w'(X)=g^2-1 >= 0, w'(Y)=h*u-h^2+M^2-M >= 0, w'(Z)=-h*v+1+M-M^2 in [-(2M^2-M-1), 0]
+ok_oai_shift = True
+for MM in range(2, 16):
+    for gg in range(1, MM + 1):
+        if not (0 <= gg * gg - 1 <= MM * MM - 1):
+            ok_oai_shift = False
+    for hh in range(1, MM + 1):
+        for uu in range(1, MM + 1):
+            wy = hh * uu - hh * hh + MM * MM - MM
+            if not (0 <= wy <= MM * MM - MM + (MM * MM) // 4):
+                ok_oai_shift = False
+            wz = -hh * uu + 1 + MM - MM * MM
+            if not (-(2 * MM * MM - MM - 1) <= wz <= 0):
+                ok_oai_shift = False
+boolcheck("OpenAI 5M shifted weights give pole-free E^L,E^R and exact P_out=2M^2-M-1 on D (M=2..15)", ok_oai_shift)
+
+# Certify ALL 6 OpenAI 5w and ALL 6 Opt. Pass (M_d) Table 4 witnesses in 44-digit outward intervals!
+table4_packings = [
+    ("2.800", (5, 259, 149, 123), "2.793e6", (5, 120, 148, 62), "6.478e5", "1.173e6"),
+    ("2.695", (6, 409, 240, 180), "8.869e6", (6, 183, 237, 93), "2.024e6", "3.755e6"),
+    ("2.500", (10, 1278, 929, 641), "2.409e8", (10, 553, 934, 323), "5.279e7", "1.046e8"),
+    ("2.371", (21, 5898, 5088, 3208), "1.519e10", (21, 2419, 5122, 1615), "3.158e9", "6.726e9"),
+    ("2.260", (255, 1202177, 1356218, 779952), "1.725e16", (260, 433560, 1378948, 396421), "3.154e15", "7.986e15"),
+    ("2.251", (2620, 158000000, 196359676, 110238457), "4.534e21", (2620, 53560000, 196719513, 55220219), "7.712e20", "2.145e21"),
+]
+ratios_lit_opt, ratios_oai_opt, ratios_oai_lit = [], [], []
+for ts, tup_oai, disp_oai, tup_opt, disp_opt, disp_lit in table4_packings:
+    ok_oai, lv_oai = _cert_pass_witness(ts, "openai", *tup_oai)
+    ok_opt, lv_opt = _cert_pass_witness(ts, "opt", *tup_opt)
+    boolcheck(f"Table 4 OpenAI 5w tau={ts} {tup_oai} interval-certified & rounds to {disp_oai}",
+              ok_oai and _matches_display(lv_oai, disp_oai))
+    boolcheck(f"Table 4 Opt. Pass (M_d) tau={ts} {tup_opt} interval-certified & rounds to {disp_opt}",
+              ok_opt and _matches_display(lv_opt, disp_opt))
+    mo, ma, ml = float((lv_opt.a + lv_opt.b) / 2), float((lv_oai.a + lv_oai.b) / 2), float(_Dec(disp_lit))
+    ratios_lit_opt.append(ml / mo)
+    ratios_oai_opt.append(ma / mo)
+    ratios_oai_lit.append(ma / ml)
+boolcheck("Table 4 ratio ranges match text: lit/opt in [1.80, 2.79], oai/opt in [4.30, 5.89], oai/lit in [2.11, 2.39]",
+          1.805 <= min(ratios_lit_opt) <= 1.815 and 2.775 <= max(ratios_lit_opt) <= 2.785
+          and 4.305 <= min(ratios_oai_opt) <= 4.315 and 5.875 <= max(ratios_oai_opt) <= 5.885
+          and 2.110 <= min(ratios_oai_lit) <= 2.120 and 2.375 <= max(ratios_oai_lit) <= 2.385)
+# Negative controls on Table 4 OpenAI 5w & Opt. Pass witnesses: h - 1 fails!
+boolcheck("MUTANT REJECTED: Table 4 OpenAI 5w tau=2.800 fails at h-1=122",
+          not _cert_pass_witness("2.800", "openai", 5, 259, 149, 122)[0])
+boolcheck("MUTANT REJECTED: Table 4 Opt. Pass tau=2.800 fails at h-1=61",
+          not _cert_pass_witness("2.800", "opt", 5, 120, 148, 61)[0])
 
 def _str3_single_cert(N: int, h: int, r: int) -> tuple[float, float]:
     ln_M = math.lgamma(N + 1) - 2.0 * math.lgamma(N // 2 + 1)
@@ -1368,13 +1588,13 @@ def _str3_single_cert(N: int, h: int, r: int) -> tuple[float, float]:
 
 # Verify all 5 Table 4 direct-sum witnesses and all 5 single-matrix witnesses (+ tau - 0.01 mutants)
 table4_ds = [
-    (2.800, 16, 2, 23.49, 24.66),
-    (2.695, 18, 3, 39.82, 42.18),
-    (2.500, 46, 5, 174.32, 193.73),
-    (2.371, 190, 17, 2492.38, 2853.84),
-    (2.330, 1322, 92, 94489.26, 109379.60),
+    (2.800, 16, 2, "23.49", "24.66"),
+    (2.695, 18, 3, "39.82", "42.18"),
+    (2.500, 46, 5, "174.32", "193.73"),
+    (2.371, 190, 17, "2492.38", "2854"),
+    (2.330, 1322, 92, "94489.26", "109380"),
 ]
-for tv, N_d, h_d, l10v_p, l10P_p in table4_ds:
+for tv, N_d, h_d, l10v_s, l10P_s in table4_ds:
     ln_M = math.lgamma(N_d + 1) - 2.0 * math.lgamma(N_d // 2 + 1)
     ln_v = N_d * math.log(3.0) + ln_M
     ln_r = 3.0 * (ln_M + math.log(2.0) + math.log1p(-0.5 * math.exp(-ln_M))) + 3.0 * N_d * math.log(4.0)
@@ -1382,21 +1602,24 @@ for tv, N_d, h_d, l10v_p, l10P_p in table4_ds:
     ln_hEp1 = math.log(h_d) + ln_E + math.log1p(math.exp(-(math.log(h_d) + ln_E)))
     eff_ds = (ln_hEp1 + h_d * (ln_r - 3.0 * ln_M)) / (h_d * ln_v)
     boolcheck(f"Table 4 Str_3 direct sum at tau={tv} ({N_d},{h_d}) valid (eff={eff_ds:.5f} < {tv})", eff_ds < tv)
-    check(f"Table 4 Str_3 direct sum log10(V) at tau={tv}", h_d * ln_v / math.log(10.0), l10v_p, rtol=1e-3)
-    check(f"Table 4 Str_3 direct sum log10(P) at tau={tv}", 3.0 * h_d * ln_M / math.log(10.0), l10P_p, rtol=1e-3)
+    boolcheck(f"Table 4 Str_3 direct sum log10(V) rounds to {l10v_s}",
+              _matches_display(_Iv(f"{h_d * ln_v / math.log(10.0):.12f}"), l10v_s))
+    boolcheck(f"Table 4 Str_3 direct sum log10(P) rounds to {l10P_s}",
+              _matches_display(_Iv(f"{3.0 * h_d * ln_M / math.log(10.0):.12f}"), l10P_s))
 
 table4_single = [
-    (2.800, 24, 3, 7, 375.54),
-    (2.695, 30, 4, 9, 810.15),
-    (2.500, 68, 7, 21, 7629.06),
-    (2.371, 272, 26, 74, 4.047e5),
-    (2.330, 1498, 166, 485, 9.371e7),
+    (2.800, 24, 3, 7, "375.54"),
+    (2.695, 30, 4, 9, "810.15"),
+    (2.500, 68, 7, 21, "7629.06"),
+    (2.371, 272, 26, 74, "4.047e5"),
+    (2.330, 1498, 166, 485, "9.371e7"),
 ]
-for tv, N_s, h_s, r_s, l10V_p in table4_single:
-    l10V_s, eff_s = _str3_single_cert(N_s, h_s, r_s)
+for tv, N_s, h_s, r_s, l10V_s in table4_single:
+    l10V_val, eff_s = _str3_single_cert(N_s, h_s, r_s)
     boolcheck(f"Table 4 Str_3 single matrix at tau={tv} {(N_s,h_s,r_s)} valid (eff={eff_s:.6f} < {tv})", eff_s < tv)
     boolcheck(f"MUTANT REJECTED: Table 4 Str_3 {(N_s,h_s,r_s)} fails at tau-0.01={tv-0.01:.3f}", not (eff_s < tv - 0.01))
-    check(f"Table 4 Str_3 single matrix log10(V) at tau={tv}", l10V_s, l10V_p, rtol=1e-3)
+    boolcheck(f"Table 4 Str_3 single matrix log10(V) rounds to {l10V_s}",
+              _matches_display(_Iv(f"{l10V_val:.12f}"), l10V_s))
 # Explicit negative control: old (22, 3, 7) is invalid at tau=2.800 (eff ~ 2.80616)
 _, eff_22 = _str3_single_cert(22, 3, 7)
 boolcheck("MUTANT REJECTED: (22, 3, 7) fails at tau=2.800 (eff=2.80616 > 2.800)", not (eff_22 < 2.800))
@@ -1516,32 +1739,32 @@ boolcheck("Universal Pass floor for all tau in (9/4, 3): w >= 8 implies v_k > w^
 boolcheck("Pan below-threshold schoolbook ratio 69^{0.2} < 3 (exact: 69 < 3^5 = 243)", 69 < 3 ** 5)
 # Certify ALL 12 monotonicity chain links in Theorem 4.6 via global 2D box certification!
 post_chain = [
-    (2.324, 2.330, (7050, 416, 1247), 6.598e10),
-    (2.330, 2.350, (1498, 166, 485), 1.839e10),
-    (2.350, 2.400, (548, 42, 124), 1.783e9),
-    (2.400, 2.550, (188, 16, 42), 3.212e7),
-    (2.550, 2.800, (52, 6, 15), 9.504e5),
+    ("2.324", "2.330", (7050, 416, 1247), "6.598e10"),
+    ("2.330", "2.350", (1498, 166, 485), "1.839e10"),
+    ("2.350", "2.400", (548, 42, 124), "1.783e9"),
+    ("2.400", "2.550", (188, 16, 42), "3.212e7"),
+    ("2.550", "2.800", (52, 6, 15), "9.504e5"),
 ]
-for ta, tb, tup, lb_b in post_chain:
+for ta_s, tb_s, tup, lb_s in post_chain:
     l10V_c, eff_c = _str3_single_cert(*tup)
-    boolcheck(f"Thm 4.6 post-Bini link [{ta:.3f}, {tb:.3f}] via {tup}: valid & {l10V_c:.2f} < cert {lb_b:.4g}",
-              eff_c < ta and l10V_c < lb_b and certify_global_pass_threshold(tb, "post", lb_b))
+    boolcheck(f"Thm 4.6 post-Bini link [{ta_s}, {tb_s}] via {tup}: valid & {l10V_c:.2f} < cert {lb_s}",
+              eff_c < float(ta_s) and l10V_c < float(lb_s) and certify_global_pass_threshold(tb_s, "post", lb_s))
 pre_chain = [
-    (2.350, 2.356, (548, 42, 124), 2.661e6),
-    (2.356, 2.371, (432, 36, 102), 1.671e6),
-    (2.371, 2.400, (272, 26, 74), 7.833e5),
-    (2.400, 2.460, (188, 16, 42), 2.368e5),
-    (2.460, 2.550, (84, 10, 26), 6.594e4),
-    (2.550, 2.700, (52, 6, 15), 1.517e4),
-    (2.700, 2.800, (28, 4, 9), 7197.27),
+    ("2.350", "2.356", (548, 42, 124), "2.661e6"),
+    ("2.356", "2.371", (432, 36, 102), "1.671e6"),
+    ("2.371", "2.400", (272, 26, 74), "7.833e5"),
+    ("2.400", "2.460", (188, 16, 42), "2.368e5"),
+    ("2.460", "2.550", (84, 10, 26), "6.594e4"),
+    ("2.550", "2.700", (52, 6, 15), "1.517e4"),
+    ("2.700", "2.800", (28, 4, 9), "7197.27"),
 ]
-for ta, tb, tup, lb_b in pre_chain:
+for ta_s, tb_s, tup, lb_s in pre_chain:
     l10V_c, eff_c = _str3_single_cert(*tup)
-    boolcheck(f"Thm 4.6 pre-Bini link [{ta:.3f}, {tb:.3f}] via {tup}: valid & {l10V_c:.2f} < cert {lb_b:.4g}",
-              eff_c < ta and l10V_c < lb_b and certify_global_pass_threshold(tb, "pre", lb_b))
+    boolcheck(f"Thm 4.6 pre-Bini link [{ta_s}, {tb_s}] via {tup}: valid & {l10V_c:.2f} < cert {lb_s}",
+              eff_c < float(ta_s) and l10V_c < float(lb_s) and certify_global_pass_threshold(tb_s, "pre", lb_s))
 l10V_2330, _ = _str3_single_cert(1498, 166, 485)
 boolcheck("MUTANT REJECTED: Table 4 Str_3 at 2.330 exceeds Pass pre-Bini LB at 2.330",
-          not certify_global_pass_threshold(2.330, "pre", l10V_2330))
+          not certify_global_pass_threshold("2.330", "pre", f"{l10V_2330:.6f}"))
 boolcheck("MUTANT REJECTED: Pan 70x70 does not beat 2.795 (log_70(143640) = 2.79512)",
           not (143640 ** 1000 < 70 ** 2795))
 
