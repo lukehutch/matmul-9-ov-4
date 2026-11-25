@@ -4,7 +4,7 @@ This repository contains the paper [`matmul_9_4_constant.tex`](matmul_9_4_consta
 
 ---
 
-## 1. What This Paper Achieves (At a Glance)
+## 1. Overview
 
 On November 24, 2026, OpenAI released the preprint *"The matrix multiplication exponent is nine fourths"*, reporting a matching lower bound $\omega_{\mathbb{F}} = 9/4 = 2.25$ over every field $\mathbb{F}$ to complement the October 2026 upper bound $\omega \le 9/4$. Constructive polynomial-packing proofs (culminating in Pass's explicit Strassen-style construction) realize $\omega \le 9/4$ by producing, for any target exponent $\tau = 9/4 + \delta > 9/4$, an exact rational bilinear identity that multiplies two $V \times V$ matrices using $R < V^\tau$ scalar multiplications, yielding an $O(n^\tau)$ algorithm $T(n) \le C(\tau)\,n^\tau$ by recursive block multiplication.
 
@@ -115,7 +115,7 @@ MatMul-9-over-4/
 ├── matmul_9_4_constant.bib             # Verified BibTeX references
 ├── figures/
 │   ├── bounds_vs_exponent.{pdf,png}    # Figure 1: universal LB & achievability UB vs. tau
-│   └── scaling_vs_excess.{pdf,png}     # Figure 2: doubly logarithmic scaling vs. delta = tau - 9/4
+│   └── scaling_vs_excess.{pdf,png}     # Figure 2: doubly-log scaling vs. delta = tau - 9/4
 ├── verification/
 │   ├── matmul_9_4_constant_check.py    # 221-check pure-Python symbolic & numerical audit
 │   ├── dag_check.py                    # Backward-only DAG & check-file order validator
