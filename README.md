@@ -149,12 +149,4 @@ python3 verification/dag_check.py matmul_9_4_constant.tex \
 # 3. Cold-build and externally kernel-check the pure Lean 4 formalization
 (cd lean && lake clean && lake build && lake env leanchecker --fresh MatMul94 && \
         lake env lean AxiomAudit.lean)
-
-# 4. Build the PDF (cleanly into /tmp/latex-build)
-mkdir -p /tmp/latex-build
-SRC="$PWD"
-pdflatex -file-line-error -synctex=1 -output-directory=/tmp/latex-build matmul_9_4_constant.tex
-(cd /tmp/latex-build && BIBINPUTS="$SRC:" bibtex matmul_9_4_constant)
-pdflatex -file-line-error -synctex=1 -output-directory=/tmp/latex-build matmul_9_4_constant.tex
-pdflatex -file-line-error -synctex=1 -output-directory=/tmp/latex-build matmul_9_4_constant.tex
 ```
