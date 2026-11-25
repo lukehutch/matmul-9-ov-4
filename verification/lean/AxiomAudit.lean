@@ -101,3 +101,7 @@ open MatMul94
 #print axioms small_V_consistent_with_9_4_general
 #print axioms small_V_16_witness_2251
 #print axioms exact_V_16_witness_9_4
+#print axioms small_V_81_witness_2251
+#print axioms exact_V_81_witness_9_4
+#print axioms blaser_excludes_16_allows_81
+#print axioms ValidPostBiniUpper.to_ValidPostBini

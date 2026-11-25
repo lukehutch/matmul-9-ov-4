@@ -205,29 +205,36 @@ theorem pass_post_witness_of_log2
     (hr_hi_c : lw_hi ≤ lr_hi + 2 * d * lc_lo)
     (h2L_c : lcoef_hi + (k - (c - 1) / 3) * lc2_hi ≤ l2L_hi + l3_lo + (k - (c - 1) / 3) * lcm1_lo)
     (hvalid : q * (6 * k * Q + 9 * lw_hi + 6 * d * l2L_hi) < p * (2 * lw_lo + 2 * k * lr_lo))
-    (hpost : q * (lh1_hi + (2 * k - 1) * (l3d_hi + lw_hi) + h * (6 * k * Q + 9 * lw_hi + 6 * d * l2L_hi))
+    (hpost : q * (Q + lh1_hi + (2 * k) * (l3d_hi + lw_hi) + h * (6 * k * Q + 9 * lw_hi + 6 * d * l2L_hi))
              < p * (h * (2 * lw_lo + 2 * k * lr_lo)))
     (hP_lo : P_lo * Q * 14267572528 ≤ (h * (2 * lw_lo + 2 * k * lr_lo)) * Q_SCALE)
     (hP_hi : (h * (2 * lw_hi + 2 * k * lr_hi)) * Q_SCALE ≤ P_hi * Q * 14267572527) :
-    ValidPostBini p q c d k h ∧ 10 ^ P_lo ≤ (v_k_pass c d k) ^ h ∧ (v_k_pass c d k) ^ h ≤ 10 ^ P_hi := by
+    ValidPostBiniUpper p q c d k h ∧ 10 ^ P_lo ≤ (v_k_pass c d k) ^ h ∧ (v_k_pass c d k) ^ h ≤ 10 ^ P_hi := by
   rcases pass_witness_core_of_log2 hQ hc hd hk hj0 hlc2_lo hlc2_hi hlc_lo hlc_hi hlcm1_lo
     hld1_lo hld1_hi hlcoef_hi hl3_lo hl1000_lo hl1000_hi hl1001_hi
     hdiv1 hw_lo_c hw_hi_c hdiv2 hr_lo_c hr_hi_c h2L_c hvalid with ⟨hV, hvk_ge, hvk_le, hw_le, hEk_le⟩
-  have hBini_le : h * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k - 1) + 1
-      ≤ (h + 1) * (3 * (2 * d + 1) * w_pass c d) ^ (2 * k - 1) := by
-    have h1 : (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k - 1)
-        ≤ (3 * (2 * d + 1) * w_pass c d) ^ (2 * k - 1) := Nat.pow_le_pow_left (by omega) _
-    have hpos : 1 ≤ (3 * (2 * d + 1) * w_pass c d) ^ (2 * k - 1) :=
+  have hBini_le : h * (2 * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k)) + 1
+      ≤ 2 * (h + 1) * (3 * (2 * d + 1) * w_pass c d) ^ (2 * k) := by
+    have h1 : (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k)
+        ≤ (3 * (2 * d + 1) * w_pass c d) ^ (2 * k) := Nat.pow_le_pow_left (by omega) _
+    have hpos : 1 ≤ (3 * (2 * d + 1) * w_pass c d) ^ (2 * k) :=
       pow_pos_of_pos (Nat.mul_pos (by omega) hV.2.2.2.1) _
-    have hm := Nat.mul_le_mul_left h h1
-    rw [Nat.add_mul, Nat.one_mul]
+    have hm := Nat.mul_le_mul_left (2 * h) h1
+    have hre : h * (2 * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k))
+        = (2 * h) * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k) := by
+      rw [← Nat.mul_assoc, Nat.mul_comm h 2]
+    have hre2 : 2 * (h + 1) * (3 * (2 * d + 1) * w_pass c d) ^ (2 * k)
+        = (2 * h) * (3 * (2 * d + 1) * w_pass c d) ^ (2 * k) + 2 * (3 * (2 * d + 1) * w_pass c d) ^ (2 * k) := by
+      rw [Nat.mul_add, Nat.add_mul, Nat.mul_one]
     omega
-  have hBini_log : Log2Le (h * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k - 1) + 1)
-      (lh1_hi + (2 * k - 1) * (l3d_hi + lw_hi)) Q :=
-    (hlh1_hi.mul ((hl3d_hi.mul hw_le).pow (2 * k - 1))).mono_left hBini_le
+  have h2_le : Log2Le 2 Q Q := by unfold Log2Le; exact Nat.le_refl _
+  have hBini_log : Log2Le (h * (2 * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k)) + 1)
+      (Q + lh1_hi + (2 * k) * (l3d_hi + lw_hi)) Q := by
+    have hm := (h2_le.mul hlh1_hi).mul ((hl3d_hi.mul hw_le).pow (2 * k))
+    exact hm.mono_left hBini_le
   have hLHS_log := hBini_log.mul (hEk_le.pow h)
   have hRHS_log := hvk_ge.pow h
-  have hlt_pb : ((h * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k - 1) + 1) * E_k_pass c d k ^ h) ^ q
+  have hlt_pb : ((h * (2 * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k)) + 1) * E_k_pass c d k ^ h) ^ q
       < (v_k_pass c d k ^ h) ^ p :=
     lt_pow_of_log2 hLHS_log hRHS_log (by rw [Nat.mul_comm _ q, Nat.mul_comm _ p]; exact hpost)
   rw [Nat.mul_pow, ← Nat.pow_mul, ← Nat.pow_mul] at hlt_pb
@@ -317,6 +324,7 @@ private theorem w_le_53 : Log2Le 53 24601231027 Q_SCALE := log2Le_Q 53 246012310
 private theorem w_le_57 : Log2Le 57 25052071853 Q_SCALE := log2Le_Q 57 25052071853 (by decide)
 private theorem w_le_59 : Log2Le 59 25265759512 Q_SCALE := log2Le_Q 59 25265759512 (by decide)
 private theorem w_le_62 : Log2Le 62 25573078428 Q_SCALE := log2Le_Q 62 25573078428 (by decide)
+private theorem w_le_63 : Log2Le 63 25672221791 Q_SCALE := log2Le_Q 63 25672221791 (by decide)
 private theorem w_le_78 : Log2Le 78 26995596973 Q_SCALE := log2Le_Q 78 26995596973 (by decide)
 private theorem w_le_90 : Log2Le 90 27882296740 Q_SCALE := log2Le_Q 90 27882296740 (by decide)
 private theorem w_le_91 : Log2Le 91 27950765149 Q_SCALE := log2Le_Q 91 27950765149 (by decide)
@@ -473,18 +481,18 @@ theorem witness_pre_2251 :
 /-! ### Verified Pass Theorem 4.3 Post-Bini constructive witnesses (all 8 targets) -/
 
 theorem witness_post_2800 :
-    ValidPostBini 14 5 5 219 157 61 ∧
-    10 ^ 1225923 ≤ (v_k_pass 5 219 157) ^ 61 ∧ (v_k_pass 5 219 157) ^ 61 ≤ 10 ^ 1225941 :=
-  pass_post_witness_of_log2 (Q := Q_SCALE) (p := 14) (q := 5) (c := 5) (d := 219) (k := 157) (h := 61)
+    ValidPostBiniUpper 14 5 5 219 157 62 ∧
+    10 ^ 1246020 ≤ (v_k_pass 5 219 157) ^ 62 ∧ (v_k_pass 5 219 157) ^ 62 ≤ 10 ^ 1246038 :=
+  pass_post_witness_of_log2 (Q := Q_SCALE) (p := 14) (q := 5) (c := 5) (d := 219) (k := 157) (h := 62)
     (lw_lo := 5247757060442) (lw_hi := 5247763254114) (lr_lo := 879749775593) (lr_hi := 879762162936)
-    (l2L_hi := 551312333051) (P_lo := 1225923) (P_hi := 1225941)
+    (l2L_hi := 551312333051) (P_lo := 1246020) (P_hi := 1246038)
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
     w_ge_7 w_le_7 w_ge_5 w_le_5 w_ge_4 w_ge_220 w_le_220 w_le_16
-    w_ge_3 w_ge_1000 w_le_1000 w_le_1001 w_le_62 w_le_1317
+    w_ge_3 w_ge_1000 w_le_1000 w_le_1001 w_le_63 w_le_1317
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
 
 theorem witness_post_2695 :
-    ValidPostBini 539 200 6 335 259 96 ∧
+    ValidPostBiniUpper 539 200 6 335 259 96 ∧
     10 ^ 4152694 ≤ (v_k_pass 6 335 259) ^ 96 ∧ (v_k_pass 6 335 259) ^ 96 ≤ 10 ^ 4152738 :=
   pass_post_witness_of_log2 (Q := Q_SCALE) (p := 539) (q := 200) (c := 6) (d := 335) (k := 259) (h := 96)
     (lw_lo := 8596833342858) (lw_hi := 8596839536092) (lr_lo := 1158266450285) (lr_hi := 1158278837422)
@@ -495,7 +503,7 @@ theorem witness_post_2695 :
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
 
 theorem witness_post_2500 :
-    ValidPostBini 5 2 10 1073 995 325 ∧
+    ValidPostBiniUpper 5 2 10 1073 995 325 ∧
     10 ^ 109440186 ≤ (v_k_pass 10 1073 995) ^ 325 ∧ (v_k_pass 10 1073 995) ^ 325 ≤ 10 ^ 109440749 :=
   pass_post_witness_of_log2 (Q := Q_SCALE) (p := 5) (q := 2) (c := 10) (d := 1073) (k := 995) (h := 325)
     (lw_lo := 32999347445114) (lw_hi := 32999353640494) (lr_lo := 2381130606793) (lr_hi := 2381142997552)
@@ -506,7 +514,7 @@ theorem witness_post_2500 :
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
 
 theorem witness_post_2371 :
-    ValidPostBini 2371 1000 21 5052 5469 1600 ∧
+    ValidPostBiniUpper 2371 1000 21 5052 5469 1600 ∧
     10 ^ 6965405961 ≤ (v_k_pass 21 5052 5469) ^ 1600 ∧ (v_k_pass 21 5052 5469) ^ 1600 ≤ 10 ^ 6965421182 :=
   pass_post_witness_of_log2 (Q := Q_SCALE) (p := 2371) (q := 1000) (c := 21) (d := 5052) (k := 5469) (h := 1600)
     (lw_lo := 196253229037394) (lw_hi := 196253235240732) (lr_lo := 5642680586921) (lr_hi := 5642692993596)
@@ -517,7 +525,7 @@ theorem witness_post_2371 :
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
 
 theorem witness_post_2321 :
-    ValidPostBini 2321 1000 36 16021 17735 5411 ∧
+    ValidPostBiniUpper 2321 1000 36 16021 17735 5411 ∧
     10 ^ 144143748589 ≤ (v_k_pass 36 16021 17735) ^ 5411 ∧ (v_k_pass 36 16021 17735) ^ 5411 ≤ 10 ^ 144143916090 :=
   pass_post_witness_of_log2 (Q := Q_SCALE) (p := 2321) (q := 1000) (c := 36) (d := 16021) (k := 17735) (h := 5411)
     (lw_lo := 722156334485666) (lw_hi := 722156340710942) (lr_lo := 10674650894665) (lr_hi := 10674663345216)
@@ -528,7 +536,7 @@ theorem witness_post_2321 :
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
 
 theorem witness_post_2300 :
-    ValidPostBini 23 10 51 34246 39069 11698 ∧
+    ValidPostBiniUpper 23 10 51 34246 39069 11698 ∧
     10 ^ 1044488581676 ≤ (v_k_pass 51 34246 39069) ^ 11698 ∧ (v_k_pass 51 34246 39069) ^ 11698 ≤ 10 ^ 1044489384081 :=
   pass_post_witness_of_log2 (Q := Q_SCALE) (p := 23) (q := 10) (c := 51) (d := 34246) (k := 39069) (h := 11698)
     (lw_lo := 1684922811183674) (lw_hi := 1684922817445400) (lr_lo := 16260336730605) (lr_hi := 16260349254056)
@@ -539,7 +547,7 @@ theorem witness_post_2300 :
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
 
 theorem witness_post_2260 :
-    ValidPostBini 113 50 255 1107000 1378300 391255 ∧
+    ValidPostBiniUpper 113 50 255 1107000 1378300 391255 ∧
     10 ^ 8099572807271912 ≤ (v_k_pass 255 1107000 1378300) ^ 391255 ∧ (v_k_pass 255 1107000 1378300) ^ 391255 ≤ 10 ^ 8099574078901871 :=
   pass_post_witness_of_log2 (Q := Q_SCALE) (p := 113) (q := 50) (c := 255) (d := 1107000) (k := 1378300) (h := 391255)
     (lw_lo := 76125858665594623) (lw_hi := 76125858674001857) (lr_lo := 107091406705390) (lr_hi := 107091423519857)
@@ -550,7 +558,7 @@ theorem witness_post_2260 :
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
 
 theorem witness_post_2251 :
-    ValidPostBini 2251 1000 2546 149000000 196570000 54300808 ∧
+    ValidPostBiniUpper 2251 1000 2546 149000000 196570000 54300808 ∧
     10 ^ 2169413092970112501391 ≤ (v_k_pass 2546 149000000 196570000) ^ 54300808 ∧ (v_k_pass 2546 149000000 196570000) ^ 54300808 ≤ 10 ^ 2169414003418894233191 :=
   pass_post_witness_of_log2 (Q := Q_SCALE) (p := 2251) (q := 1000) (c := 2546) (d := 149000000) (k := 196570000) (h := 54300808)
     (lw_lo := 14482262684444278862) (lw_hi := 14482262684748472096) (lr_lo := 1449828898085629) (lr_hi := 1449829506472096)

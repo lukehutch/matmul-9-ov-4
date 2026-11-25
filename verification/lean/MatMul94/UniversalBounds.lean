@@ -24,10 +24,35 @@ def ValidPassTriple (p q c d k : Nat) : Prop :=
   2 ≤ c ∧ 1 ≤ d ∧ 1 ≤ k ∧ 1 ≤ w_pass c d ∧ 1 ≤ Lambda_pass c d ∧
   (E_k_pass c d k) ^ q < (v_k_pass c d k) ^ p
 
+/-- Lower-bound post-Bini predicate using Pass's Lemma 2.9 tracked formal degree `S^(2k-1)`. -/
 def ValidPostBini (p q c d k h : Nat) : Prop :=
   ValidPassTriple p q c d k ∧ 1 ≤ h ∧
   (h * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k - 1) + 1) ^ q * (E_k_pass c d k) ^ (h * q)
     < (v_k_pass c d k) ^ (h * p)
+
+/-- Sufficient upper-bound post-Bini certificate using `d_ε^(2k) < 2 * S^(2k)` (Thm. 3.10(ii)). -/
+def ValidPostBiniUpper (p q c d k h : Nat) : Prop :=
+  ValidPassTriple p q c d k ∧ 1 ≤ h ∧
+  (h * (2 * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k)) + 1) ^ q * (E_k_pass c d k) ^ (h * q)
+    < (v_k_pass c d k) ^ (h * p)
+
+theorem ValidPostBiniUpper.to_ValidPostBini {p q c d k h : Nat}
+    (hU : ValidPostBiniUpper p q c d k h) : ValidPostBini p q c d k h := by
+  rcases hU with ⟨hV, hh, hlt⟩
+  have hS : 1 ≤ 3 * (2 * d + 1) * w_pass c d - 2 := by
+    have h9 : 9 ≤ 3 * (2 * d + 1) := by have := hV.2.1; omega
+    have hm := Nat.mul_le_mul h9 hV.2.2.2.1
+    omega
+  have hpow : (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k - 1)
+      ≤ 2 * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k) := by
+    have h1 : (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k - 1)
+        ≤ (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k) :=
+      Nat.pow_le_pow_right hS (by omega)
+    omega
+  have hle : (h * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k - 1) + 1) ^ q * (E_k_pass c d k) ^ (h * q)
+      ≤ (h * (2 * (3 * (2 * d + 1) * w_pass c d - 2) ^ (2 * k)) + 1) ^ q * (E_k_pass c d k) ^ (h * q) :=
+    Nat.mul_le_mul_right _ (Nat.pow_le_pow_left (Nat.add_le_add_right (Nat.mul_le_mul_left h hpow) 1) q)
+  exact ⟨hV, hh, Nat.lt_of_le_of_lt hle hlt⟩
 
 /-! ### Core universal structural inequalities (ALL `(c, d, k) ∈ ℕ³`, ZERO floats) -/
 

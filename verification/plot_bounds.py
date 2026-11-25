@@ -199,12 +199,15 @@ def pass_post_lb_ub(tau: float, use_exact_Md: bool = False) -> tuple[float, floa
             du, lu, ln_w = del_ub(d)
             if du <= 0.0 or lu <= 0.0:
                 return 1e100
-            BL = BL_full if ((9.0 - 2.0 * tau) * ln_w / du >= j0) else 0.0
-            kc = ((9.0 - 2.0 * tau) * ln_w + 6.0 * d * BL) / du
-            ln_S = math.log(3.0 * (2 * d + 1)) + ln_w
-            k_star = kc + math.sqrt(max(1e-12, kc * kc - 0.5 * kc))
-            ln_lam_lb = (6.0 * d * ln_rho + math.log(64.0)) / tau
-            return ((2.0 * k_star - 1.0) * ln_S / ((k_star - kc) * du)) * (2.0 * ln_w + k_star * ln_lam_lb) / ln10
+            # Exact conservative floor for w and exact S = 3(2d+1)w - 2
+            ln_w_lo = math.log(((c + 2) ** (2 * d)) // (d + 1)) if ln_w < 40.0 else ln_w - 1e-12
+            BL = BL_full if ((9.0 - 2.0 * tau) * ln_w_lo / du >= j0 + 1e-9) else 0.0
+            kc = ((9.0 - 2.0 * tau) * ln_w_lo + 6.0 * d * BL) / du
+            ln_S = math.log(3 * (2 * d + 1) * (((c + 2) ** (2 * d)) // (d + 1)) - 2) if ln_w < 40.0 else math.log(3.0 * (2 * d + 1)) + ln_w_lo - 1e-11
+            A = 2.0 * ln_w_lo
+            B = (6.0 * d * ln_rho + math.log(64.0)) / tau
+            k_star = max(1.0, kc + math.sqrt(max(1e-12, (kc - 0.5) * (kc + A / B)))) if kc > 0.5 else 1.0
+            return ((2.0 * k_star - 1.0) * ln_S / ((k_star - kc) * du)) * (A + B * k_star) / ln10
 
         def eval_ub(d: int) -> float:
             du, lu, ln_w = del_ub(d)
@@ -259,11 +262,14 @@ def str3_single_matrix_ub(tau: float) -> float | None:
         h_lo = max(1, int(math.ceil(lnE / margin)))
         for h in range(h_lo, h_lo + 45):
             lhs = math.log(h) + lnE + math.log1p(math.exp(-(math.log(h) + lnE)))
-            rem = h * margin - lhs
-            if rem <= 0.0:
+            # Include exact +1 inside B = R_ex/P + 1 of Lemma 4.3
+            ln_Rex_over_P = lhs + h * (lnr - lnp)
+            ln_B = ln_Rex_over_P + math.exp(-min(ln_Rex_over_P, 50.0))
+            rem = h * tau * lnv - ln_B
+            if rem <= 1e-12:
                 continue
             r_sch = max(1, math.ceil((h * lnp) / rem))
-            while r_sch * rem <= h * lnp:
+            while r_sch * rem <= h * lnp + 1e-12:
                 r_sch += 1
             val = h * r_sch * lnv / ln10
             if val < best:
@@ -278,7 +284,7 @@ def shared_legend_handles(c_post: str, c_opt: str, c_pre: str, c_str3: str, c_sl
     """
     return [
         Line2D([0], [0], color=c_post, linestyle="-", lw=2.1,
-               label=r"Pass post-Bini $V$ (universal LB)"),
+               label=r"Pass post-Bini $V$ (Lemma 2.9 LB)"),
         Line2D([0], [0], color="none", marker="o", markersize=6.6,
                markerfacecolor="none", markeredgecolor=c_post, markeredgewidth=1.55,
                label=r"Pass post-Bini $V$ (achievable UB)"),
@@ -293,13 +299,13 @@ def shared_legend_handles(c_post: str, c_opt: str, c_pre: str, c_str3: str, c_sl
                label=r"Untwisted $\mathrm{Str}_3^{\otimes N}$ single-matrix UB"),
         Line2D([0], [0], color="none", marker="s", markersize=6.8,
                markerfacecolor="#f48c36", markeredgecolor="#444444", markeredgewidth=0.9,
-               label=r"Pan (1978): $V=70,\ \tau=2.795$"),
+               label=r"Pan (1978): $V=70,\ \log_V R \approx 2.795$"),
         Line2D([0], [0], color="none", marker="^", markersize=7.4,
                markerfacecolor="#f5c542", markeredgecolor="#444444", markeredgewidth=0.9,
-               label=r"Strassen (1969): $V=2,\ \tau=2.807$"),
+               label=r"Strassen (1969): $V=2,\ \log_V R \approx 2.807$"),
         Line2D([0], [0], color="none", marker="D", markersize=6.8,
                markerfacecolor="white", markeredgecolor="#4a5568", markeredgewidth=1.4,
-               label=r"Supermult. obstruction: $V=16,\ R=513$"),
+               label=r"Hypothetical witness: $V=81,\ R^*=19{,}684$"),
         Line2D([0], [0], color=c_slope, linestyle=":", lw=1.45,
                label=r"Asymptotic $\delta^{-5}(\ln\delta^{-1})^3$"),
         Line2D([0], [0], color=c_slope, linestyle=(0, (3, 2, 1, 2)), lw=1.4,
@@ -373,7 +379,7 @@ def main() -> None:
     tau_pan = math.log(143640.0) / math.log(70.0)
     log10_V_pan = math.log10(70.0)
     tau_obs = 2.251
-    log10_V_obs = math.log10(16.0)
+    log10_V_obs = math.log10(81.0)
 
     # Asymptotic reference slope guides (Theorem thm:asymptotic_scaling)
     d_ref = np.geomspace(1.3e-3, 0.22, 80)
@@ -455,9 +461,9 @@ def main() -> None:
     ax1.set_title(r"Universal lower bounds and constructive achievability vs. exponent $\tau$")
 
     ax1.annotate(r"Post-Bini $V$" + "\n" + r"($10^{2.1\times 10^{21}}$ at $2.251$)",
-                 xy=(2.262, post_lb[4]), xytext=(2.415, 2.5e19),
+                 xy=(taus[idx_2251], post_lb[idx_2251]), xytext=(2.375, 2.5e19),
                  fontsize=9.0, color="#c9405b",
-                 arrowprops=dict(arrowstyle="->", color="#c9405b", lw=1.0, connectionstyle="arc3,rad=0.14"))
+                 arrowprops=dict(arrowstyle="->", color="#c9405b", lw=1.0, connectionstyle="arc3,rad=0.12"))
     ax1.annotate(r"Pre-Bini $v_k$",
                  xy=(2.288, pre_lb[7]), xytext=(2.410, 2.5e13),
                  fontsize=9.0, color="#2473cc",
@@ -466,9 +472,9 @@ def main() -> None:
                  xy=(tau_pan - 0.005, log10_V_pan * 1.15), xytext=(2.615, 2.5e1),
                  fontsize=8.6, color="#8a5a19",
                  arrowprops=dict(arrowstyle="->", color="#8a5a19", lw=0.95, connectionstyle="arc3,rad=0.12"))
-    ax1.annotate(r"$V{=}16$" + "\n" + r"$R{=}513$",
-                 xy=(tau_obs + 0.002, log10_V_obs * 1.55), xytext=(2.258, 2.0e2),
-                 fontsize=8.3, color="#334155",
+    ax1.annotate(r"$V{=}81$" + "\n" + r"$R^*{=}19{,}684$",
+                 xy=(tau_obs + 0.002, log10_V_obs * 1.55), xytext=(2.258, 3.0e2),
+                 fontsize=8.1, color="#334155",
                  bbox=dict(facecolor="white", edgecolor="none", alpha=0.82, pad=0.7),
                  arrowprops=dict(arrowstyle="->", color="#334155", lw=0.9, connectionstyle="arc3,rad=0.14"))
 
@@ -511,7 +517,7 @@ def main() -> None:
     ax2.scatter([tau_strassen - 2.25], [log10_V_strassen], color="#f5c542", edgecolor="#444444", lw=0.9, s=72, zorder=6, marker="^")
     ax2.scatter([tau_obs - 2.25], [log10_V_obs], facecolor="white", edgecolor="#4a5568", lw=1.5, s=70, zorder=6, marker="D")
 
-    ax2.text(2.4e-3, 2.2e14, r"$\propto \delta^{-5}(\ln\delta^{-1})^3$",
+    ax2.text(2.8e-3, 1.1e15, r"$\propto \delta^{-5}(\ln\delta^{-1})^3$",
              fontsize=9.2, color="#475569", rotation=-27.5, ha="left", va="top")
     ax2.text(2.4e-3, 5.5e6, r"$\propto \delta^{-3}(\ln\delta^{-1})^2$",
              fontsize=9.2, color="#475569", rotation=-17.0, ha="left", va="top")

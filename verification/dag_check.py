@@ -101,9 +101,14 @@ def check_paper(path):
     region = regions(text)
     floats = float_spans(text)
     labels = {}
-    for m in LABEL.finditer(text):
-        labels.setdefault(m.group(1), m.start())
     bad = []
+    for m in LABEL.finditer(text):
+        key = m.group(1)
+        if key in labels:
+            bad.append((line_of(text, m.start()), key,
+                        f"duplicate label (first defined at L{line_of(text, labels[key])})"))
+        else:
+            labels[key] = m.start()
     n_refs = 0
     for m in REF.finditer(text):
         src = m.start()
@@ -152,7 +157,14 @@ def check_checkfile(path, labels, text):
     for i, ln in enumerate(src, 1):
         m = re.match(r'\s*eq\("([^"]*)",\s*(\d+)', ln)
         if m:
-            blocks.append((i, int(m.group(2)), m.group(1)))
+            lbl, tln = m.group(1), int(m.group(2))
+            blocks.append((i, tln, lbl))
+            if lbl not in labels:
+                bad.append(f"{path}:{i}: eq() label {lbl!r} is not defined in paper")
+            else:
+                actual_ln = line_of(text, labels[lbl])
+                if tln != actual_ln:
+                    bad.append(f"{path}:{i}: eq() line for {lbl} is L{tln}, but paper defines it at L{actual_ln}")
     for (i0, t0, l0), (i1, t1, l1) in zip(blocks, blocks[1:]):
         if t1 < t0:
             bad.append(f"{path}:{i1}: block {l1} (L{t1}) comes after {l0} (L{t0})")
@@ -182,15 +194,16 @@ def check_checkfile(path, labels, text):
             if d not in labels:
                 bad.append(f"{path}:{i}: {label} cites unknown label {d}")
             elif d == label:
-                continue
+                bad.append(f"{path}:{i}: {label} lists itself in Derived from")
             else:
                 d_line = line_of(text, labels[d])
-                pos = line_start[tex_line - 1]
+                actual_line = line_of(text, labels[label]) if label in labels else tex_line
+                pos = line_start[actual_line - 1]
                 if (in_float(pos) or in_float(labels[d])
                         or (region(pos) == "main" and region(labels[d]) == "appendix")):
                     continue
-                if d_line > tex_line:
-                    bad.append(f"{path}:{i}: {label} (L{tex_line}) is derived from later {d} (L{d_line})")
+                if d_line > actual_line:
+                    bad.append(f"{path}:{i}: {label} (L{actual_line}) is derived from later {d} (L{d_line})")
     print(f"{path}: {len(blocks)} equation blocks checked for order and derivation sources")
     for b in bad:
         print("  VIOLATION " + b)

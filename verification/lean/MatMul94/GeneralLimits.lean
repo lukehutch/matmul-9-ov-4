@@ -460,8 +460,8 @@ private theorem lt_of_pow_four_eq {x y a b e : Nat}
   rw [← Nat.pow_mul, ← Nat.pow_mul, Nat.mul_comm a 4, Nat.mul_comm b 4]
   exact h
 
-/-- Concrete polynomial-size witness at `τ = 2.251`: `V = 16, R* = 513` satisfies
-    `16^9 < 513^4` AND `513^1000 < 16^2251`. -/
+/-- Supermultiplicative-only witness at `τ = 2.251`: `V = 16, R* = 513` satisfies
+    `16^9 < 513^4` and `513^1000 < 16^2251` (excluded by Bläser's non-supermultiplicative bound `592 > 513`). -/
 theorem small_V_16_witness_2251 : 16 ^ 9 < 513 ^ 4 ∧ 513 ^ 1000 < 16 ^ 2251 := by
   have h := small_V_consistent_with_9_4_general (a0 := 1) (b0 := 1000) (m := 2)
     (by decide) (by decide) (by decide) (by decide)
@@ -470,7 +470,39 @@ theorem small_V_16_witness_2251 : 16 ^ 9 < 513 ^ 4 ∧ 513 ^ 1000 < 16 ^ 2251 :=
   rw [h16, h513] at h
   exact ⟨h.1, lt_of_pow_four_eq (x := 513) (y := 16) (a := 1000) (b := 2251) (by decide) h.2⟩
 
-/-- Exact `9/4` equality witness at `V = 16, R = 512`: `512^4 = 16^9`. -/
+/-- Exact `9/4` equality arithmetic at `V = 16, R = 512`: `512^4 = 16^9`. -/
 theorem exact_V_16_witness_9_4 : 512 ^ 4 = 16 ^ 9 := by decide
+
+private theorem sb_bound_aux {a b c d e f : Nat}
+    (h1 : a < b) (he : e ≠ 0) (hb : 0 < b)
+    (h2 : b = c ^ 4) (h3 : d = c ^ 3) (h4 : 4 * (e + 1) = 3 * f) :
+    a ^ e < d ^ f := by
+  have p1 : a ^ e < b ^ e := Nat.pow_lt_pow_left h1 he
+  have p2 : b ^ e ≤ b ^ (e + 1) := Nat.pow_le_pow_right hb (Nat.le_succ e)
+  have p3 : b ^ (e + 1) = d ^ f := by
+    rw [h2, h3, ← Nat.pow_mul, ← Nat.pow_mul, h4]
+  exact Nat.lt_of_lt_of_le (Nat.lt_of_lt_of_le p1 p2) (Nat.le_of_eq p3)
+
+/-- Concrete witness at `τ = 2.251` evading both supermultiplicative bounds and all known
+    `O(V^2)` flattening bounds (`Bläser 16159.5`, `Massarenti–Raviolo 16929`, ideal `3 * 81^2 = 19683`):
+    `μ = 3` gives `V = 81, R* = 19684` with `81^9 < 19684^4` and `19684^1000 < 81^2251`. -/
+theorem small_V_81_witness_2251 :
+    81 ^ 9 < 19684 ^ 4 ∧ 19684 ^ 1000 < 81 ^ 2251 ∧ 80 ^ 749 < 27 ^ 1000 := by
+  have h := small_V_consistent_with_9_4_general (a0 := 1) (b0 := 1000) (m := 3)
+    (by decide) (by decide) (by decide) (by decide)
+  have h81 : (3 : Nat) ^ 4 = 81 := by decide
+  have h19684 : (3 : Nat) ^ 9 + 1 = 19684 := by decide
+  rw [h81, h19684] at h
+  have hsb : 80 ^ 749 < 27 ^ 1000 :=
+    sb_bound_aux (a := 80) (b := 81) (c := 3) (d := 27) (e := 749) (f := 1000)
+      (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+  exact ⟨h.1, lt_of_pow_four_eq (x := 19684) (y := 81) (a := 1000) (b := 2251) (by decide) h.2, hsb⟩
+
+/-- Exact `9/4` and `3*V^2` coincidence at `V = 81`: `19683^4 = 81^9` and `3 * 81^2 = 19683`. -/
+theorem exact_V_81_witness_9_4 : 19683 ^ 4 = 81 ^ 9 ∧ 3 * 81 ^ 2 = 19683 := by decide
+
+/-- Bläser's `(5/2)V^2 - 3V` bound excludes `V = 16, R = 513` (`592 > 513`) and passes `V = 81` (`16159.5 < 19684`). -/
+theorem blaser_excludes_16_allows_81 :
+    2 * 513 < 5 * 16 ^ 2 - 6 * 16 ∧ 5 * 81 ^ 2 - 6 * 81 < 2 * 19684 := by decide
 
 end MatMul94

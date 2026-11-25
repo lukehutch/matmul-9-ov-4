@@ -319,55 +319,50 @@ theorem same_slot_multi_eps_collision (a b c t : Nat) (ha : 1 ≤ a) (hb : 1 ≤
       polyAdd (polySub (P j) (polyShift t (P (j + 1))))
         (polyAdd (polyScale ε (polyShift b (Q1blk j)))
                  (polyScale (ε * ε) (polyShift b (Q2blk j))))
-    (∀ ε : Int, ∀ k < b,
+    ∀ ε : Int, ∀ k < b,
       intSum c (fun j => polyShift (t * j) (polyMul A (E2 ε j)) (s + k)) =
-      ε * polyMul A Q1 (a - 1 + k) + (ε * ε) * polyMul A Q2 (a - 1 + k)) ∧
-    ((∃ k < b, polyMul A Q1 (a - 1 + k) ≠ 0) →
-      ∃ k < b, polyMul A Q1 (a - 1 + k) ≠ 0) := by
-  intro s Q1 Q2 E2
-  constructor
-  · intro ε k hk
-    let Qcomb : Nat → Poly := fun j => polyAdd (Q1blk j) (polyScale ε (Q2blk j))
-    have hE_eq : ∀ j m, E2 ε j m =
+      ε * polyMul A Q1 (a - 1 + k) + (ε * ε) * polyMul A Q2 (a - 1 + k) := by
+  intro s Q1 Q2 E2 ε k hk
+  let Qcomb : Nat → Poly := fun j => polyAdd (Q1blk j) (polyScale ε (Q2blk j))
+  have hE_eq : ∀ j m, E2 ε j m =
+      polyAdd (polySub (P j) (polyShift t (P (j + 1))))
+        (polyScale ε (polyShift b (Qcomb j))) m := by
+    intro j m
+    dsimp only [E2, Qcomb, polyAdd, polySub, polyScale, polyShift]
+    by_cases hbm : b ≤ m
+    · simp only [hbm, ↓reduceIte]; grind
+    · simp only [hbm, ↓reduceIte]; grind
+  have hsum_eq : intSum c (fun j => polyShift (t * j) (polyMul A (E2 ε j)) (s + k)) =
+      intSum c (fun j => polyShift (t * j) (polyMul A (fun m =>
         polyAdd (polySub (P j) (polyShift t (P (j + 1))))
-          (polyScale ε (polyShift b (Qcomb j))) m := by
-      intro j m
-      dsimp only [E2, Qcomb, polyAdd, polySub, polyScale, polyShift]
-      by_cases hbm : b ≤ m
-      · simp only [hbm, ↓reduceIte]; grind
-      · simp only [hbm, ↓reduceIte]; grind
-    have hsum_eq : intSum c (fun j => polyShift (t * j) (polyMul A (E2 ε j)) (s + k)) =
-        intSum c (fun j => polyShift (t * j) (polyMul A (fun m =>
-          polyAdd (polySub (P j) (polyShift t (P (j + 1))))
-            (polyScale ε (polyShift b (Qcomb j))) m)) (s + k)) := by
-      apply intSum_congr
-      intro j _
-      have hf : E2 ε j = fun m =>
-          polyAdd (polySub (P j) (polyShift t (P (j + 1))))
-            (polyScale ε (polyShift b (Qcomb j))) m := funext (hE_eq j)
-      rw [hf]
-    rw [hsum_eq]
-    have htele := primal_telescoping_identity c b t ε A P Qcomb (s + k)
-    dsimp only at htele
-    rw [htele]
-    have hvan := (gap_window_disjoint a b c t ha hb).2 hct A (P 0) (P c) hA hP0 k hk
-    rw [hvan.1, hvan.2]
-    have hQsplit : (fun m => intSum c (fun j => polyShift (t * j) (Qcomb j) m)) =
-        polyAdd Q1 (polyScale ε Q2) := by
-      funext m
-      dsimp only [Qcomb, Q1, Q2, polyAdd, polyScale]
-      have hterm : ∀ j, polyShift (t * j) (polyAdd (Q1blk j) (polyScale ε (Q2blk j))) m =
-          polyShift (t * j) (Q1blk j) m + ε * polyShift (t * j) (Q2blk j) m := by
-        intro j; unfold polyShift polyAdd polyScale; split <;> simp
-      rw [intSum_congr (fun j _ => hterm j), intSum_add, intSum_mul_left]
-    rw [hQsplit]
-    unfold polyShift
-    have hbsk : b ≤ s + k := by omega
-    have hsub : s + k - b = a - 1 + k := by omega
-    simp only [hbsk, ↓reduceIte, hsub]
-    rw [polyMul_add_right, polyMul_scale_right]
-    grind
-  · intro ⟨k, hk, hne⟩; exact ⟨k, hk, hne⟩
+          (polyScale ε (polyShift b (Qcomb j))) m)) (s + k)) := by
+    apply intSum_congr
+    intro j _
+    have hf : E2 ε j = fun m =>
+        polyAdd (polySub (P j) (polyShift t (P (j + 1))))
+          (polyScale ε (polyShift b (Qcomb j))) m := funext (hE_eq j)
+    rw [hf]
+  rw [hsum_eq]
+  have htele := primal_telescoping_identity c b t ε A P Qcomb (s + k)
+  dsimp only at htele
+  rw [htele]
+  have hvan := (gap_window_disjoint a b c t ha hb).2 hct A (P 0) (P c) hA hP0 k hk
+  rw [hvan.1, hvan.2]
+  have hQsplit : (fun m => intSum c (fun j => polyShift (t * j) (Qcomb j) m)) =
+      polyAdd Q1 (polyScale ε Q2) := by
+    funext m
+    dsimp only [Qcomb, Q1, Q2, polyAdd, polyScale]
+    have hterm : ∀ j, polyShift (t * j) (polyAdd (Q1blk j) (polyScale ε (Q2blk j))) m =
+        polyShift (t * j) (Q1blk j) m + ε * polyShift (t * j) (Q2blk j) m := by
+      intro j; unfold polyShift polyAdd polyScale; split <;> simp
+    rw [intSum_congr (fun j _ => hterm j), intSum_add, intSum_mul_left]
+  rw [hQsplit]
+  unfold polyShift
+  have hbsk : b ≤ s + k := by omega
+  have hsub : s + k - b = a - 1 + k := by omega
+  simp only [hbsk, ↓reduceIte, hsub]
+  rw [polyMul_add_right, polyMul_scale_right]
+  grind
 
 /-! ### Layer 1D: Cubic rate floor, strict gap above 9/4, `c`-floor, and unimodality -/
 

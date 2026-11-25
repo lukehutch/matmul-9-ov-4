@@ -1,8 +1,8 @@
 # Citation Verification Record: `matmul_9_4_constant.tex`
 
-This file is the primary-source verification record for `/home/luke/Work/MatMul-9-over-4/matmul_9_4_constant.tex` and `/home/luke/Work/MatMul-9-over-4/matmul_9_4_constant.bib`.
+This file is the primary-source verification record for `matmul_9_4_constant.tex` and `matmul_9_4_constant.bib`.
 All metadata has been cross-checked against Crossref, OpenAlex, arXiv, or primary-source preprints read in full.
-Every verbatim quote below is copied from text fetched and inspected in-session; paywalled historical articles (1969--1997) with no open full-text copy are explicitly marked `ABSTRACT-ONLY` or `METADATA-ONLY` without fabricated quotes.
+Quoted passages below are transcribed from the named primary source (with ASCII math normalization noted where extracted from PDF); paywalled historical articles (1969--1999) with no open full-text copy are explicitly marked `ABSTRACT-ONLY` or `METADATA-ONLY` without fabricated quotes.
 
 ## Pass2026
 - **Verified authors**: Rafael Pass
@@ -210,8 +210,59 @@ Every verbatim quote below is copied from text fetched and inspected in-session;
 - **Source URL**: OpenAlex `https://api.openalex.org/works/https://doi.org/10.1109/sfcs.1978.34`
 - **Claims supported**:
   - Claim: Constructed an explicit bilinear algorithm multiplying 70 x 70 matrices in 143,640 scalar multiplications, achieving exponent log_70(143,640) < 2.796 < 2.800 (exact: 143,640^5 < 70^14).
-- **Status**: METADATA-ONLY (OpenAlex verified; IEEE paywalled full text; standard historical 70 x 70 / 143,640 trilinear-aggregating algorithm cross-verified against textbook references and arithmetic check 143,640^5 < 70^14)
-- **Notes**: No fabricated quote; channels tried: paperclip, OpenAlex.
+- **Status**: METADATA-ONLY (the 1978 IEEE FOCS article is paywalled; Pan's 2018 author retrospective `Pan2018` explicitly corroborates the 70 x 70 side and 143,640 rank, and the rank-exponent inequality 143,640^5 < 70^14 is recomputed independently)
+- **Notes**: No fabricated quote; channels tried: paperclip, Crossref, OpenAlex.
+
+## Pan2018
+- **Verified authors**: Victor Y. Pan
+- **Verified title**: Fast Feasible and Unfeasible Matrix Multiplication
+- **Journal**: Preprint (2018)
+- **DOI**: N/A
+- **arXiv**: 1804.04102 [cs.DS]
+- **Source URL**: https://arxiv.org/abs/1804.04102 (submitted LaTeX source read via allpapers)
+- **Claims supported**:
+  - Claim: Author retrospective confirming that Pan (1978) constructed an explicit bilinear algorithm of rank 143,640 for 70 x 70 matrix multiplication.
+    Quote: "was decreased only in 1978, when the paper [P78] presented a bilinear algorithm of rank 143,640 for 70 x 70 MM. This implied the exponent omega = log_70 (143,640) < 2.7962" (`1804.04102.tex`, lines 921--924)
+- **Status**: VERIFIED
+- **Notes**: Full submitted arXiv LaTeX source retrieved and checked.
+
+## Blaser1999
+- **Verified authors**: Markus Blaser (Markus Bl{\"a}ser)
+- **Verified title**: A 5/2 n^2-lower bound for the rank of n x n-matrix multiplication over arbitrary fields
+- **Journal**: Proceedings of the 40th Annual Symposium on Foundations of Computer Science (FOCS), pp. 45-50, IEEE (1999)
+- **DOI**: 10.1109/SFFCS.1999.814576
+- **arXiv**: N/A
+- **Source URL**: Crossref `https://doi.org/10.1109/SFFCS.1999.814576`
+- **Claims supported**:
+  - Claim: Established the field-independent lower bound R(<n, n, n>) >= (5/2) n^2 - 3n on the bilinear rank of n x n matrix multiplication.
+- **Status**: METADATA-ONLY (paywalled IEEE FOCS full text; the exact formula (5/2) n^2 - 3n over every field is corroborated verbatim in `Landsberg2014` (`1206.1530.tex`, Abstract L68 & Sec. 1 L124), `MassarentiRaviolo2013` (`1211.6320.tex`, Abstract L200 & Intro L217), and `OpenAI2026Lower` Sec. 1)
+- **Notes**: No fabricated quote; channels tried: paperclip, Crossref, OpenAlex.
+
+## Landsberg2014
+- **Verified authors**: J. M. Landsberg
+- **Verified title**: New lower bounds for the rank of matrix multiplication
+- **Journal**: SIAM Journal on Computing, Vol. 43, No. 1, pp. 144-149 (2014)
+- **DOI**: 10.1137/120880276
+- **arXiv**: 1206.1530 [cs.CC]
+- **Source URL**: https://arxiv.org/abs/1206.1530 (submitted LaTeX source read via allpapers)
+- **Claims supported**:
+  - Claim: Over the complex numbers, for every integer 1 <= p <= n - 1, R(<n, n, n>) >= (3 - 1/(p + 1)) n^2 - (1 + 2p binom(2p, p - 1)) n, improving Blaser's (5/2) n^2 - 3n bound for all n > 84.
+    Quote: "More precisely, for any integer p <= n - 1 the rank is at least (3 - 1/(p + 1)) n^2 - (1 + 2p binom(2p, p - 1)) n. The previous lower bound, due to Blaser, was (5/2) n^2 - 3n (the case p = 1). The new bounds improve Blaser's bound for all n > 84." (`1206.1530.tex`, Abstract L66--70; Theorem 1.2 L116--124)
+- **Status**: VERIFIED
+- **Notes**: Full submitted arXiv LaTeX source retrieved and checked.
+
+## MassarentiRaviolo2013
+- **Verified authors**: Alex Massarenti, Emanuele Raviolo
+- **Verified title**: On the rank of n x n matrix multiplication
+- **Journal**: Preprint (2013; corrected arXiv:1211.6320v2)
+- **DOI**: N/A (note: the earlier Linear Algebra Appl. 438(11):4500-4509 (2013) version inherited the uncorrected Landsberg preprint error term noted in Landsberg2014 Sec. 1; we cite the corrected arXiv:1211.6320v2)
+- **arXiv**: 1211.6320v2 [math.AG]
+- **Source URL**: https://arxiv.org/abs/1211.6320 (submitted LaTeX source read via allpapers)
+- **Claims supported**:
+  - Claim: Over C, establishes R(<n, n, n>) >= (8/3) n^2 - 7n (at p = 2), improving Blaser's (5/2) n^2 - 3n bound for every n >= 24 (and excluding 3 <= n <= 37 at tau = 2.251, while giving 16,929 < 19,684 at n = 81).
+    Quote: "Finally, for p = 2, with a sligtly different strategy we menage to obtain the lower bound (8/3) n^2 - 7n which improves Blaser's bound for any n >= 24." (`1211.6320.tex`, Abstract L200; Remark 3.4 L638--642)
+- **Status**: VERIFIED
+- **Notes**: Full submitted arXiv LaTeX source (`1211.6320v2`) retrieved and checked.
 
 ## BCRL1979
 - **Verified authors**: Dario Bini, Milvio Capovani, Francesco Romani, Grazia Lotti
