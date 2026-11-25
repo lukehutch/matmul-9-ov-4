@@ -7,19 +7,19 @@
      - Pass Remark 4.5 meta-family (`remark45_universal_round_necessary`,
        `remark45_universal_vk_pow_gt_w_pow`).
      - Universal Bini-conversion degree horizon (`general_bini_deg_horizon`).
-  2. Formal Disproof Across Arbitrary Algorithms for `τ ∈ (2.32112, 3)`:
+  2. Pointwise arithmetic comparisons for the arbitrary-algorithm disproof (intervals in text/Python):
      - Strassen 1969 (`counterexample_strassen_1969`),
      - Pan 1978 (`counterexample_pan_1978`),
      - Single-matrix `Str_3^{⊗N}` strictly beating Pass's pre-Bini universal
        lower bounds at `τ ∈ {2.807, 2.500, 2.371}`
        (`counterexample_str3_beats_pass_2807`, `_2500`, `_2371`).
-  3. Formal Obstruction Theorem for General Algorithms at `τ > 9/4`:
-     - Every supermultiplicative rank lower bound obeys `Φ(V) ≤ V^{9/4}`
+  3. Arithmetic form of the supermultiplicative obstruction at `τ > 9/4`:
+     - Every rational-valued supermultiplicative rank lower bound obeys `Φ(V) ≤ V^{9/4}`
        under `ω ≤ 9/4` (`supermultiplicative_bound_le_9_4`).
      - Polynomial-size pairs `(V, R*) = (m^4, m^9 + 1)` strictly exceed every
        supermultiplicative lower bound while achieving exponent `< 9/4 + a0/b0`
        (`bernoulli_add_one_lt_two`, `small_V_consistent_with_9_4_general`,
-       `small_V_16_witness_2251`, `exact_V_16_witness_9_4`).
+       `small_V_16_witness_2251`, `exact_V_16_witness_9_4`, `small_V_81_witness_2251`).
 
   Pure-kernel Lean 4.36.0, zero Mathlib, zero `sorry`, zero `native_decide`.
 -/
@@ -230,7 +230,7 @@ theorem general_bini_deg_horizon
     omega
   exact ⟨hroot, Nat.lt_of_le_of_lt hle hroot⟩
 
-/-! ### Part 2: Formal Disproof Across Arbitrary Algorithms for `τ ∈ (2.32112, 3)` -/
+/-! ### Part 2: Pointwise arithmetic comparisons for the arbitrary-algorithm disproof -/
 
 private theorem lt_pow_of_log2_two {E p1 Q a b : Nat}
     (hE : Log2Le E p1 Q) (hcmp : p1 * b < Q * a) : E ^ b < 2 ^ a :=
@@ -284,7 +284,7 @@ theorem counterexample_str3_beats_pass_2371 :
   have hpow : 10 ^ 899543 ≤ 10 ^ 1276692 := Nat.pow_le_pow_right (n := 10) (i := 899543) (j := 1276692) (by decide) (by decide)
   exact ⟨hw.2.2, Nat.lt_of_le_of_lt (Nat.le_trans hw.2.1 hpow) hlb⟩
 
-/-! ### Part 3: Formal Obstruction Theorem for General Algorithms at `τ > 9/4` -/
+/-! ### Part 3: Arithmetic form of the supermultiplicative obstruction -/
 
 /-- Zero-subtraction `Nat` Bernoulli inequality: `B^(k + 1) + k * B^k ≤ B * (B + 1)^k`. -/
 private theorem nat_bernoulli_mul (B : Nat) : ∀ k, B ^ (k + 1) + k * B ^ k ≤ B * (B + 1) ^ k
