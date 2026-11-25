@@ -17,9 +17,9 @@
      - Every rational-valued supermultiplicative rank lower bound obeys `Φ(V) ≤ V^{9/4}`
        under `ω ≤ 9/4` (`supermultiplicative_bound_le_9_4`).
      - Polynomial-size pairs `(V, R*) = (m^4, m^9 + 1)` strictly exceed every
-       supermultiplicative lower bound while achieving exponent `< 9/4 + a0/b0`
-       (`bernoulli_add_one_lt_two`, `small_V_consistent_with_9_4_general`,
-       `small_V_16_witness_2251`, `exact_V_16_witness_9_4`, `small_V_81_witness_2251`).
+       supermultiplicative bound while beating `9/4 + a0/b0` (`bernoulli_add_one_lt_two`,
+       `small_V_consistent_with_9_4_general`, `small_V_16_witness_2251`, `small_V_81_witness_2251`),
+       with `9/4` equalities (`exact_V_16_witness_9_4`, `exact_V_81_witness_9_4`) and Bläser check (`blaser_excludes_16_allows_81`).
 
   Pure-kernel Lean 4.36.0, zero Mathlib, zero `sorry`, zero `native_decide`.
 -/
