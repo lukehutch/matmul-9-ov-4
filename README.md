@@ -51,7 +51,7 @@ The globally certified universal lower bounds (44-digit outward-rounded interval
 
 ### How Much Can Optimizations Cut the Constant?
 
-- **Exact balanced-word counting ($M_d$) + Pass's $(2w - 1)$-point separation:** In Table 4 (certified via explicit integer tuples in 44-digit outward-rounded interval arithmetic), replacing Cauchy-Schwarz $w$ with $M_d$ inside Pass's Lemma 3.4 over $\mathbb{Q}$ cuts $\log_{10} V$ by **$1.81\times$ to $2.78\times$** relative to literal Pass (and **$4.31\times$ to $5.88\times$** relative to OpenAI's $5w$ separation over fields containing a primitive $(5w)$-th root of unity), without altering the $\delta^{-5}(\ln\delta^{-1})^3$ scaling.
+- **Exact balanced-word counting ($M_d$) inside Pass's $(2w - 1)$-point separation:** In Table 4 (certified via explicit integer tuples in 44-digit outward-rounded interval arithmetic), replacing Cauchy-Schwarz $w$ with $M_d$ inside Pass's Lemma 3.4 over $\mathbb{Q}$ cuts $\log_{10} V$ by **$1.81\times$ to $2.78\times$** relative to literal Pass (and **$4.31\times$ to $5.88\times$** relative to OpenAI's $5w$ construction evaluated over $\mathbb{C}$), without altering the $\delta^{-5}(\ln\delta^{-1})^3$ scaling.
 - **Single-shot untwisting of Strassen's $\mathrm{Str}_3^{\otimes N}$:** Eliminates the $2k$-half-round degree cascade, dropping the $\tau = 2.800$ base block side from $10^{1.173 \times 10^6}$ down to **$10^{23.5}$** (multi-copy direct sum) and **$10^{375.5}$** (single matrix product via finite Schönhage conversion, $3{,}124\times$ smaller in $\log_{10} V$), but stalls at $3\log_6 4 \approx 2.32112$ and cannot approach $9/4$.
 
 ### Exact Boundary of Universality (Can *Any* $9/4$ Algorithm Do Better?)

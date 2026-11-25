@@ -1289,7 +1289,7 @@ def _ubox_iv(c: int, d: int) -> _Iv:
 
 
 def _ln_2Lk_m1_iv(c: int, k: int) -> _Iv:
-    """Outward-rounded enclosure of ln(2*L_k(c) - 1): exact recurrence up to 50000, Thm. 3.9 affine bounds above."""
+    """Outward-rounded enclosure of ln(2*L_k(c) - 1): exact recurrence up to 50000, Thm. 3.9 bounds above."""
     steps = min(k, 50000)
     L = 1
     for _ in range(steps):
@@ -1298,19 +1298,20 @@ def _ln_2Lk_m1_iv(c: int, k: int) -> _Iv:
         return _Iv(_Dec(2 * L - 1)).ln()
     rem = k - steps
     ln_rho = _ilr(c + 2, c - 1)
-    lo_v = (_Iv(2) * (_Iv(_Dec(L)) - _Iv(1) / _Iv(3))).ln() + rem * ln_rho
+    # Valid for all c >= 2: 2*L_{j+1}-1 >= rho*(2*L_j-1) + 1/(c-1) > rho*(2*L_j-1)
+    lo_v = _Iv(_Dec(2 * L - 1)).ln() + rem * ln_rho
     hi_v = (_Iv(2) * (_Iv(_Dec(L)) + _Iv(c - 3) / _Iv(3))).ln() + rem * ln_rho
     return _Iv(lo_v.a, hi_v.b)
 
 
 def _matches_display(val_iv: _Iv, displayed_str: str) -> bool:
-    """Check that interval val_iv lies strictly inside the rounding cell of displayed_str (half-ULP)."""
+    """Check that interval val_iv lies strictly inside the open half-ULP rounding cell of displayed_str."""
     d_val = _Dec(displayed_str)
     exp = d_val.as_tuple().exponent
     half_ulp = _Dec(5) * (_Dec(10) ** (exp - 1))
-    cell_lo = _ILO.subtract(d_val, half_ulp)
-    cell_hi = _IHI.add(d_val, half_ulp)
-    return val_iv.a >= cell_lo and val_iv.b <= cell_hi
+    cell_lo = _IHI.subtract(d_val, half_ulp)
+    cell_hi = _ILO.add(d_val, half_ulp)
+    return val_iv.a > cell_lo and val_iv.b < cell_hi
 
 
 def certify_global_pass_threshold(tau_val, mode: str, threshold) -> bool:
@@ -1496,6 +1497,8 @@ boolcheck("MUTANT REJECTED: overstated post-Bini LB 2.080e21 at tau=2.251 refute
 _, _lv_2800_chk = _cert_pass_witness("2.800", "pre", 6, 139, 114)
 boolcheck("MUTANT REJECTED: 1-last-digit display mutant 7927.64 rejected (exact 7927.63)",
           not _matches_display(_lv_2800_chk, "7927.64"))
+boolcheck("MUTANT REJECTED: boundary tie 1.235 rejected for display string 1.23",
+          not _matches_display(_Iv("1.235"), "1.23"))
 
 lam_ub_136 = 4 * 136 * math.log(8 / 6) - 2 * math.log(137)
 del_ub_136 = 2.8 * lam_ub_136 - 6 * 136 * math.log(8 / 5) - math.log(64)
@@ -1572,57 +1575,75 @@ boolcheck("MUTANT REJECTED: Table 4 OpenAI 5w tau=2.800 fails at h-1=122",
 boolcheck("MUTANT REJECTED: Table 4 Opt. Pass tau=2.800 fails at h-1=61",
           not _cert_pass_witness("2.800", "opt", 5, 120, 148, 61)[0])
 
-def _str3_single_cert(N: int, h: int, r: int) -> tuple[float, float]:
-    ln_M = math.lgamma(N + 1) - 2.0 * math.lgamma(N // 2 + 1)
-    ln_v = N * math.log(3.0) + ln_M
-    ln_P = 3.0 * h * ln_M
-    ln_r_str = 3.0 * (ln_M + math.log(2.0) + math.log1p(-0.5 * math.exp(-ln_M))) + 3.0 * N * math.log(4.0)
-    ln_E = math.log(3.0 * (N + 1)) + ln_M
-    ln_hEp1 = math.log(h) + ln_E + math.log1p(math.exp(-(math.log(h) + ln_E)))
-    ln_Rex = ln_hEp1 + h * ln_r_str
+def _str3_ds_iv(N: int, h: int) -> tuple[_Iv, _Iv, _Iv]:
+    """44-digit outward-rounded interval enclosure of untwisted Str_3^{otimes N} direct sum
+    returning (log10_V, log10_P, eff_exp) from exact integer M = C(N, N/2)."""
+    M = math.comb(N, N // 2)
+    ln_M = _Iv(_Dec(M)).ln()
+    ln_v = N * _ilg(3) + ln_M
+    ln_P = 3 * h * ln_M
+    ln_r = 3 * _Iv(_Dec(2 * M - 1)).ln() + 3 * N * _ilg(4)
+    ln_hEp1 = _Iv(_Dec(h * 3 * (N + 1) * M + 1)).ln()
+    eff_ds = (ln_hEp1 + h * (ln_r - 3 * ln_M)) / (h * ln_v)
+    return (h * ln_v) / _IL10, ln_P / _IL10, eff_ds
+
+
+def _str3_single_iv(N: int, h: int, r: int) -> tuple[_Iv, _Iv]:
+    """44-digit outward-rounded interval enclosure of untwisted Str_3^{otimes N} single-matrix
+    conversion via Lemma 4.3, returning (log10_V, eff_exp) from exact integer M = C(N, N/2)."""
+    M = math.comb(N, N // 2)
+    ln_M = _Iv(_Dec(M)).ln()
+    ln_v = N * _ilg(3) + ln_M
+    ln_P = 3 * h * ln_M
+    ln_r = 3 * _Iv(_Dec(2 * M - 1)).ln() + 3 * N * _ilg(4)
+    ln_hEp1 = _Iv(_Dec(h * 3 * (N + 1) * M + 1)).ln()
+    ln_Rex = ln_hEp1 + h * ln_r
     d_rp = ln_Rex - ln_P
-    ln_B = d_rp + (math.log1p(math.exp(-d_rp)) if d_rp < 500.0 else 0.0)
+    if d_rp.a > 50:
+        ln_B = d_rp + _Iv(0, _Dec("1e-20"))
+    else:
+        exp_neg = _Iv(_INE.next_minus(_INE.exp(-d_rp.b)), _INE.next_plus(_INE.exp(-d_rp.a)))
+        ln_B = d_rp + (_Iv(1) + exp_neg).ln()
     ln_R = ln_P + r * ln_B
     ln_V = h * r * ln_v
-    return ln_V / math.log(10.0), ln_R / ln_V
+    return ln_V / _IL10, ln_R / ln_V
 
-# Verify all 5 Table 4 direct-sum witnesses and all 5 single-matrix witnesses (+ tau - 0.01 mutants)
+
+# Verify all 5 Table 4 direct-sum witnesses and all 5 single-matrix witnesses in 44-digit intervals!
 table4_ds = [
-    (2.800, 16, 2, "23.49", "24.66"),
-    (2.695, 18, 3, "39.82", "42.18"),
-    (2.500, 46, 5, "174.32", "193.73"),
-    (2.371, 190, 17, "2492.38", "2854"),
-    (2.330, 1322, 92, "94489.26", "109380"),
+    ("2.800", 16, 2, "23.49", "24.66"),
+    ("2.695", 18, 3, "39.82", "42.18"),
+    ("2.500", 46, 5, "174.32", "193.73"),
+    ("2.371", 190, 17, "2492.38", "2854"),
+    ("2.330", 1322, 92, "94489.26", "109380"),
 ]
-for tv, N_d, h_d, l10v_s, l10P_s in table4_ds:
-    ln_M = math.lgamma(N_d + 1) - 2.0 * math.lgamma(N_d // 2 + 1)
-    ln_v = N_d * math.log(3.0) + ln_M
-    ln_r = 3.0 * (ln_M + math.log(2.0) + math.log1p(-0.5 * math.exp(-ln_M))) + 3.0 * N_d * math.log(4.0)
-    ln_E = math.log(3.0 * (N_d + 1)) + ln_M
-    ln_hEp1 = math.log(h_d) + ln_E + math.log1p(math.exp(-(math.log(h_d) + ln_E)))
-    eff_ds = (ln_hEp1 + h_d * (ln_r - 3.0 * ln_M)) / (h_d * ln_v)
-    boolcheck(f"Table 4 Str_3 direct sum at tau={tv} ({N_d},{h_d}) valid (eff={eff_ds:.5f} < {tv})", eff_ds < tv)
-    boolcheck(f"Table 4 Str_3 direct sum log10(V) rounds to {l10v_s}",
-              _matches_display(_Iv(f"{h_d * ln_v / math.log(10.0):.12f}"), l10v_s))
-    boolcheck(f"Table 4 Str_3 direct sum log10(P) rounds to {l10P_s}",
-              _matches_display(_Iv(f"{3.0 * h_d * ln_M / math.log(10.0):.12f}"), l10P_s))
+for ts, N_d, h_d, l10v_s, l10P_s in table4_ds:
+    l10v_iv, l10P_iv, eff_ds_iv = _str3_ds_iv(N_d, h_d)
+    boolcheck(f"Table 4 Str_3 direct sum at tau={ts} ({N_d},{h_d}) interval-valid (eff_hi={float(eff_ds_iv.b):.5f} < {ts})",
+              eff_ds_iv.b < _Iv(ts).a)
+    boolcheck(f"Table 4 Str_3 direct sum log10(V) interval rounds to {l10v_s}",
+              _matches_display(l10v_iv, l10v_s))
+    boolcheck(f"Table 4 Str_3 direct sum log10(P) interval rounds to {l10P_s}",
+              _matches_display(l10P_iv, l10P_s))
 
 table4_single = [
-    (2.800, 24, 3, 7, "375.54"),
-    (2.695, 30, 4, 9, "810.15"),
-    (2.500, 68, 7, 21, "7629.06"),
-    (2.371, 272, 26, 74, "4.047e5"),
-    (2.330, 1498, 166, 485, "9.371e7"),
+    ("2.800", 24, 3, 7, "375.54"),
+    ("2.695", 30, 4, 9, "810.15"),
+    ("2.500", 68, 7, 21, "7629.06"),
+    ("2.371", 272, 26, 74, "4.047e5"),
+    ("2.330", 1498, 166, 485, "9.371e7"),
 ]
-for tv, N_s, h_s, r_s, l10V_s in table4_single:
-    l10V_val, eff_s = _str3_single_cert(N_s, h_s, r_s)
-    boolcheck(f"Table 4 Str_3 single matrix at tau={tv} {(N_s,h_s,r_s)} valid (eff={eff_s:.6f} < {tv})", eff_s < tv)
-    boolcheck(f"MUTANT REJECTED: Table 4 Str_3 {(N_s,h_s,r_s)} fails at tau-0.01={tv-0.01:.3f}", not (eff_s < tv - 0.01))
-    boolcheck(f"Table 4 Str_3 single matrix log10(V) rounds to {l10V_s}",
-              _matches_display(_Iv(f"{l10V_val:.12f}"), l10V_s))
+for ts, N_s, h_s, r_s, l10V_s in table4_single:
+    l10V_iv, eff_s_iv = _str3_single_iv(N_s, h_s, r_s)
+    boolcheck(f"Table 4 Str_3 single matrix at tau={ts} {(N_s,h_s,r_s)} interval-valid (eff_hi={float(eff_s_iv.b):.6f} < {ts})",
+              eff_s_iv.b < _Iv(ts).a)
+    boolcheck(f"MUTANT REJECTED: Table 4 Str_3 {(N_s,h_s,r_s)} fails at tau-0.01",
+              eff_s_iv.a > (_Iv(ts) - _Iv("0.01")).b)
+    boolcheck(f"Table 4 Str_3 single matrix log10(V) interval rounds to {l10V_s}",
+              _matches_display(l10V_iv, l10V_s))
 # Explicit negative control: old (22, 3, 7) is invalid at tau=2.800 (eff ~ 2.80616)
-_, eff_22 = _str3_single_cert(22, 3, 7)
-boolcheck("MUTANT REJECTED: (22, 3, 7) fails at tau=2.800 (eff=2.80616 > 2.800)", not (eff_22 < 2.800))
+_, eff_22_iv = _str3_single_iv(22, 3, 7)
+boolcheck("MUTANT REJECTED: (22, 3, 7) fails at tau=2.800 (eff_lo > 2.800)", eff_22_iv.a > _Iv("2.800").b)
 boolcheck("MUTANT REJECTED: omitting +1 fails at j=2 (100 > 625/7)", not (100 <= Fraction(625, 7)))
 
 eq("eq:schonhage_induct", 704, "Inductive inequality (B^j + 1)(B - 1) <= B^{j+1} for B >= 2, j >= 1")
@@ -1746,9 +1767,9 @@ post_chain = [
     ("2.550", "2.800", (52, 6, 15), "9.504e5"),
 ]
 for ta_s, tb_s, tup, lb_s in post_chain:
-    l10V_c, eff_c = _str3_single_cert(*tup)
-    boolcheck(f"Thm 4.6 post-Bini link [{ta_s}, {tb_s}] via {tup}: valid & {l10V_c:.2f} < cert {lb_s}",
-              eff_c < float(ta_s) and l10V_c < float(lb_s) and certify_global_pass_threshold(tb_s, "post", lb_s))
+    l10V_iv, eff_iv = _str3_single_iv(*tup)
+    boolcheck(f"Thm 4.6 post-Bini link [{ta_s}, {tb_s}] via {tup}: interval-valid & {float(l10V_iv.b):.2f} < cert {lb_s}",
+              eff_iv.b < _Iv(ta_s).a and l10V_iv.b < _Iv(lb_s).a and certify_global_pass_threshold(tb_s, "post", lb_s))
 pre_chain = [
     ("2.350", "2.356", (548, 42, 124), "2.661e6"),
     ("2.356", "2.371", (432, 36, 102), "1.671e6"),
@@ -1759,12 +1780,13 @@ pre_chain = [
     ("2.700", "2.800", (28, 4, 9), "7197.27"),
 ]
 for ta_s, tb_s, tup, lb_s in pre_chain:
-    l10V_c, eff_c = _str3_single_cert(*tup)
-    boolcheck(f"Thm 4.6 pre-Bini link [{ta_s}, {tb_s}] via {tup}: valid & {l10V_c:.2f} < cert {lb_s}",
-              eff_c < float(ta_s) and l10V_c < float(lb_s) and certify_global_pass_threshold(tb_s, "pre", lb_s))
-l10V_2330, _ = _str3_single_cert(1498, 166, 485)
-boolcheck("MUTANT REJECTED: Table 4 Str_3 at 2.330 exceeds Pass pre-Bini LB at 2.330",
-          not certify_global_pass_threshold("2.330", "pre", f"{l10V_2330:.6f}"))
+    l10V_iv, eff_iv = _str3_single_iv(*tup)
+    boolcheck(f"Thm 4.6 pre-Bini link [{ta_s}, {tb_s}] via {tup}: interval-valid & {float(l10V_iv.b):.2f} < cert {lb_s}",
+              eff_iv.b < _Iv(ta_s).a and l10V_iv.b < _Iv(lb_s).a and certify_global_pass_threshold(tb_s, "pre", lb_s))
+l10V_2330_iv, _ = _str3_single_iv(1498, 166, 485)
+ok_pass_2330, lv_pass_2330 = _cert_pass_witness("2.330", "pre", 42, 10917, 12900)
+boolcheck("Positive 2.330 check: Pass pre-Bini witness (42,10917,12900) is valid at 2.330 and strictly below Table 4 Str_3",
+          ok_pass_2330 and lv_pass_2330.b < l10V_2330_iv.a)
 boolcheck("MUTANT REJECTED: Pan 70x70 does not beat 2.795 (log_70(143640) = 2.79512)",
           not (143640 ** 1000 < 70 ** 2795))
 

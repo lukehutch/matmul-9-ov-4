@@ -148,8 +148,8 @@ def check_paper(path):
 
 def check_checkfile(path, labels, text):
     src = open(path, encoding="utf-8").read().split("\n")
-    # Match any colon-qualified label token so unknown prefixes are rejected too.
-    label_pat = re.compile(r"\b([A-Za-z][\w.-]*:[\w:.\-]+)")
+    # Match any colon-qualified label token (including numeric/underscore prefixes) so unknown prefixes are rejected too.
+    label_pat = re.compile(r"(?<![\w.-])([\w.-]+:[\w:.\-]+)")
     bad = []
     blocks = []      # (line in check file, tex line, label)
     for i, ln in enumerate(src, 1):

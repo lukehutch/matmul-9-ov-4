@@ -259,7 +259,7 @@ Quoted passages below are transcribed from the named primary source (with ASCII 
 - **arXiv**: 1211.6320v2 [cs.CC]
 - **Source URL**: https://arxiv.org/abs/1211.6320v2 (submitted LaTeX source read via allpapers)
 - **Claims supported**:
-  - Claim: Over C, establishes R(<n, n, n>) >= (8/3) n^2 - 7n (at p = 2), matching Blaser's (5/2) n^2 - 3n at n = 24 and strictly improving it for every n > 24 (excluding 3 <= n <= 37 at tau = 2.251, while giving 16,929 < 19,684 at n = 81).
+  - Claim: Over C, establishes R(<n, n, n>) >= (8/3) n^2 - 7n (at p = 2), matching Blaser's (5/2) n^2 - 3n at n = 24 and strictly improving it for every n > 24 (excluding 7 <= n <= 37 at tau = 2.251 on its own, and 3 <= n <= 37 when combined with Blaser's bound, while giving 16,929 < 19,684 at n = 81).
     Quote: "Finally, for p = 2, with a sligtly different strategy we menage to obtain the lower bound (8/3) n^2 - 7n which improves Blaser's bound for any n >= 24." (`1211.6320.tex`, Abstract L200; Remark 3.4 L638--642)
 - **Status**: VERIFIED
 - **Notes**: Full submitted arXiv LaTeX source (`1211.6320v2`, primary class `cs.CC`) retrieved and checked.
@@ -276,6 +276,19 @@ Quoted passages below are transcribed from the named primary source (with ASCII 
     Quote: "The main result in [3] is incorrect, because of a mistake in the first version of [2], which was propagated in our paper. For the full and correct version of our paper see [4]." (p. 369; Eq. (0.3), p. 370)
 - **Status**: VERIFIED
 - **Notes**: Published corrigendum PDF verified directly.
+
+## Robbins1955
+- **Verified authors**: Herbert Robbins
+- **Verified title**: A Remark on Stirling's Formula
+- **Journal**: The American Mathematical Monthly, Vol. 62, No. 1, pp. 26-29 (1955)
+- **DOI**: 10.2307/2308012
+- **arXiv**: N/A
+- **Source URL**: https://dornsife.usc.edu/sergey-lototsky/wp-content/uploads/sites/211/2024/02/Stirling-Robbins.pdf (original journal scan checked)
+- **Claims supported**:
+  - Claim: For every positive integer n >= 1, n! = sqrt(2*pi) n^{n+1/2} e^{-n} e^{r_n} with 1/(12n + 1) < r_n < 1/(12n) (Eqs. (1)-(2), p. 26).
+    Quote: "We shall prove Stirling's formula by showing that for n = 1, 2, ... (1) n! = sqrt(2*pi) n^{n+1/2} e^{-n} e^{r_n} where r_n satisfies the double inequality (2) 1/(12n+1) < r_n < 1/(12n)." (p. 26)
+- **Status**: VERIFIED
+- **Notes**: Original journal article verified directly (pp. 26-29).
 
 ## BCRL1979
 - **Verified authors**: Dario Bini, Milvio Capovani, Francesco Romani, Grazia Lotti

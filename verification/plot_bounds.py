@@ -11,15 +11,17 @@ matmul_9_4_constant.tex) with an identical shared legend:
       vertical scale) vs. target matrix multiplication exponent tau.
 
   Figure 2 (figures/scaling_vs_excess.{pdf,png}):
-      The same universal lower bounds and constructive achievability curves on
+      The same numerical lower-envelope and witness-size estimate curves on
       doubly logarithmic axes vs. the exponent excess delta = tau - 9/4.
 
 Run:
     uv run verification/plot_bounds.py
 
-Every curve point is computed directly from the exact algebraic recurrences and
-universal inequalities proved in matmul_9_4_constant.tex (Sections 3 and 4) and
-cross-checked against the printed benchmark values of Tables 2--4.
+Curves use floating-point evaluations and a heuristic parameter search across the
+algebraic recurrences and universal inequalities of matmul_9_4_constant.tex
+(Sections 3 and 4); globally certified benchmark lower bounds and individually
+certified integer witnesses appear separately in Tables 2--4 and are checked in
+44-digit outward-rounded interval arithmetic by verification/matmul_9_4_constant_check.py.
 """
 from __future__ import annotations
 
@@ -38,7 +40,7 @@ import numpy as np
 # Exact algebraic evaluators (matching Sections 3--4 of matmul_9_4_constant.tex)
 # ============================================================================
 def _vec_ln_fact(n: np.ndarray) -> np.ndarray:
-    """Vectorized Stirling + 1/(12n) approximation accurate to < 1e-10 for n >= 10."""
+    """Vectorized Stirling approximation with the 1/(12n) correction."""
     out = np.zeros_like(n, dtype=np.float64)
     pos = n > 1
     np_v = n[pos].astype(np.float64)
@@ -46,9 +48,9 @@ def _vec_ln_fact(n: np.ndarray) -> np.ndarray:
     return out
 
 
-def log_exact_Md(c: int, d: int) -> float:
-    """Natural log of exact balanced-word count M_d(c) = sum_{h=0}^d (C(d,h)(c+1)^{d-h})^2
-    evaluated by vectorized log-concave peak window summation (no Gaussian approximation)."""
+def estimate_log_Md(c: int, d: int) -> float:
+    """Floating log-sum-exp of the balanced-word count M_d(c) using a Stirling-based
+    peak window for large d (visual guide curve only; not an interval enclosure)."""
     lg_d = math.lgamma(d + 1)
     lc1 = math.log(c + 1)
     if d <= 600:
@@ -202,7 +204,7 @@ def pass_post_lb_ub(tau: float, use_exact_Md: bool = False) -> tuple[float, floa
 
         def ln_w_fn(d: int) -> float:
             if use_exact_Md:
-                return log_exact_Md(c, d)
+                return estimate_log_Md(c, d)
             return 2.0 * d * math.log(c + 2.0) - math.log(d + 1.0)
 
         def del_ub(d: int) -> tuple[float, float, float]:
@@ -301,19 +303,19 @@ def shared_legend_handles(c_post: str, c_opt: str, c_pre: str, c_str3: str, c_sl
     """
     return [
         Line2D([0], [0], color=c_post, linestyle="-", lw=2.1,
-               label=r"Pass post-Bini $V$ (Lemma 2.9 LB envelope)"),
+               label=r"Pass post-Bini LB estimate (Lemma 2.9)"),
         Line2D([0], [0], color="none", marker="o", markersize=6.6,
                markerfacecolor="none", markeredgecolor=c_post, markeredgewidth=1.55,
-               label=r"Pass post-Bini $V$ (witness UB)"),
+               label=r"Pass post-Bini witness-size estimate"),
         Line2D([0], [0], color=c_opt, linestyle="-.", lw=1.85,
-               label=r"Optimized Pass ($M_d$) post-Bini UB"),
+               label=r"Optimized Pass ($M_d$) witness-size estimate"),
         Line2D([0], [0], color=c_pre, linestyle="-", lw=2.1,
-               label=r"Pass pre-Bini $v_k$ (LB envelope)"),
+               label=r"Pass pre-Bini LB estimate"),
         Line2D([0], [0], color="none", marker="o", markersize=6.6,
                markerfacecolor="none", markeredgecolor=c_pre, markeredgewidth=1.55,
-               label=r"Pass pre-Bini $v_k$ (witness UB)"),
+               label=r"Pass pre-Bini witness-size estimate"),
         Line2D([0], [0], color=c_str3, linestyle="-", lw=2.1,
-               label=r"Untwisted $\mathrm{Str}_3^{\otimes N}$ single-matrix UB"),
+               label=r"Untwisted $\mathrm{Str}_3^{\otimes N}$ single-matrix estimate"),
         Line2D([0], [0], color="none", marker="s", markersize=6.8,
                markerfacecolor="#f48c36", markeredgecolor="#444444", markeredgewidth=0.9,
                label=r"Pan (1978): $V=70,\ \log_V R \approx 2.795$"),
@@ -412,7 +414,7 @@ def main() -> None:
         "font.size": 10.5,
         "axes.labelsize": 11.5,
         "axes.titlesize": 12.0,
-        "legend.fontsize": 8.6,
+        "legend.fontsize": 7.8,
         "xtick.labelsize": 9.8,
         "ytick.labelsize": 9.8,
         "axes.linewidth": 0.9,
@@ -475,7 +477,7 @@ def main() -> None:
     configure_y_axis(ax1)
     ax1.set_xlim(2.235, 2.835)
     ax1.set_xlabel(r"Target matrix multiplication exponent $\tau$")
-    ax1.set_title(r"Universal lower bounds and constructive witnesses vs. exponent $\tau$")
+    ax1.set_title(r"Numerical Pass envelopes and witness-size estimates vs. exponent $\tau$")
 
     ax1.annotate(r"Post-Bini $V$" + "\n" + r"($10^{2.1\times 10^{21}}$ at $2.251$)",
                  xy=(taus[idx_2251], post_lb[idx_2251]), xytext=(2.375, 2.5e19),
@@ -499,7 +501,7 @@ def main() -> None:
         handles=handles,
         loc="lower center", ncol=3, frameon=True, framealpha=0.96,
         edgecolor="#cbd5e1", bbox_to_anchor=(0.5, 0.012),
-        columnspacing=1.1, handlelength=2.2,
+        columnspacing=0.85, handlelength=1.8,
     )
     fig1.subplots_adjust(left=0.105, right=0.98, top=0.93, bottom=0.31)
 
@@ -549,7 +551,7 @@ def main() -> None:
         handles=handles,
         loc="lower center", ncol=3, frameon=True, framealpha=0.96,
         edgecolor="#cbd5e1", bbox_to_anchor=(0.5, 0.012),
-        columnspacing=1.1, handlelength=2.2,
+        columnspacing=0.85, handlelength=1.8,
     )
     fig2.subplots_adjust(left=0.105, right=0.98, top=0.93, bottom=0.31)
 
@@ -561,7 +563,7 @@ def main() -> None:
 
     print(f"Wrote {f1_pdf} ({f1_pdf.stat().st_size} bytes) and {f1_png} ({f1_png.stat().st_size} bytes)")
     print(f"Wrote {f2_pdf} ({f2_pdf.stat().st_size} bytes) and {f2_png} ({f2_png.stat().st_size} bytes)")
-    print(f"Verified benchmarks: tau=2.800 preLB={pre_lb[idx_2800]:.2f} preUB={pre_ub[idx_2800]:.2f} "
+    print(f"Grid-search sanity checks: tau=2.800 preLB={pre_lb[idx_2800]:.2f} preUB={pre_ub[idx_2800]:.2f} "
           f"postLB={post_lb[idx_2800]:.3e} postUB={post_ub[idx_2800]:.3e}")
     print(f"                     tau=2.371 preLB={pre_lb[idx_2371]:.2f} postLB={post_lb[idx_2371]:.3e}")
     print(f"                     tau=2.251 preLB={pre_lb[idx_2251]:.3e} postLB={post_lb[idx_2251]:.3e}")
