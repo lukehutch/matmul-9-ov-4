@@ -298,7 +298,7 @@ def str3_single_matrix_ub(tau: float) -> float | None:
 
 def shared_legend_handles(c_post: str, c_opt: str, c_pre: str, c_str3: str, c_slope: str) -> list[Line2D]:
     """Identical line-and-marker legend used on both Figure 1 and Figure 2.
-    Solid lines for LB estimates, strokeless open circles for witness-size estimates,
+    Solid lines for LB estimates, unconnected open circles for literal Pass witness estimates,
     no filled boxes, and no redundant style words in the labels.
     """
     return [
@@ -442,7 +442,7 @@ def main() -> None:
     # ========================================================================
     fig1, ax1 = plt.subplots(figsize=(8.8, 5.8))
 
-    # LB estimates as crisp solid lines; witness-size estimates as strokeless open circles
+    # Plot Pass LB estimates as solid lines and literal Pass witness estimates as unconnected open circles.
     ax1.plot(taus, post_lb, color=c_post, linestyle="-", lw=2.1, zorder=3)
     ax1.plot(taus[idx_f1], post_ub[idx_f1], color=c_post, linestyle="none",
              marker="o", markersize=6.8, markerfacecolor="none",
