@@ -1,11 +1,5 @@
 # The Magnitude of the Hidden Constant in Exponent-9/4 Matrix Multiplication
 
-This repository contains the paper [`matmul_9_4_constant.tex`](matmul_9_4_constant.tex), a pure-kernel Lean 4 formalization ([`lean/MatMul94/`](lean/MatMul94/)), and numerical verification ([`verification/`](verification/)).
-
----
-
-## 1. Overview
-
 In October 2026, OpenAI proved the non-constructive spectral upper bound ω ≤ 9/4 = 2.25 (*"An Upper Bound of 9/4 for the Matrix Multiplication Exponent"*, October 2, 2026), and on October 30, 2026 Rafael Pass (*"Matrix Multiplication from Polynomial Packings: A Constructive Proof of ω ≤ 9/4"*, arXiv:2610.28627) eliminated the asymptotic spectrum to give a self-contained, explicit recursive O(n<sup>9/4 + δ</sup>) algorithm for that one-sided upper bound (Pass's Theorems 1.1 and 4.3). On November 24, 2026, OpenAI released *"The matrix multiplication exponent is nine fourths"*, reporting the matching lower bound ω<sub>𝔽</sub> = 9/4 over every field 𝔽. In a Strassen-style recursive algorithm, an n × n matrix is partitioned recursively into fixed-size blocks — the **base block size** (analogous to 2 × 2 in Strassen's 7-multiplication algorithm) — multiplied by a single finite bilinear identity. Pass's Theorem 4.3 compiles a polynomial-packing pipeline over integer parameters (c, d, k) (packing c + 1 full products and one middle product into c slightly longer products, balancing 2d primal–dual variables, uncoupling shared matrix legs, and symmetrizing over k rounds) to produce an approximate bilinear identity of **pre-Bini base block size** v<sub>k</sub> × v<sub>k</sub>; Bini ε-interpolation then removes the formal parameter ε to produce an exact rational bilinear identity of **post-Bini base block size** V × V (V = v<sub>k</sub><sup>h</sup>) and rank R < V<sup>τ</sup> (τ = 9/4 + δ) for recursive block multiplication.
 
 **Pass noted qualitatively that the algorithm is "galactic" with enormous hidden constants, without quantifying them. This paper calculates exact, unviolable universal lower bounds and matching constructive upper bounds on those constants ($v_k$, $V$, and $C(\tau)$ in $T(n) \le C(\tau)\,n^\tau$).**
@@ -68,7 +62,7 @@ We rigorously separate what is **universally unviolable** from what is **disprov
 
 ---
 
-## 2. How the Proof Works: The Five Algebraic Constraints
+## Sketch of the Proof: The Five Algebraic Constraints
 
 Every factor in the $\delta^{-5}(\ln\delta^{-1})^3$ explosion comes from a rigid, unavoidable algebraic identity at one of five structural layers:
 
@@ -93,7 +87,7 @@ Every factor in the $\delta^{-5}(\ln\delta^{-1})^3$ explosion comes from a rigid
 
 ---
 
-## 3. Mechanical Verification (Pure-Kernel Lean 4 + Python)
+## Mechanical Verification (Pure-Kernel Lean 4 + Python)
 
 Every theorem in the paper is independently verified twice:
 
@@ -105,9 +99,7 @@ Every theorem in the paper is independently verified twice:
   - `100%` pure Python standard library (exact multivariate polynomial ring `PolyQ` over $\mathbb{Q}$, arbitrary-precision integers, and adversarial mutants on every equation block).
   - Checked for strict backward-only DAG ordering by `verification/dag_check.py`.
 
----
-
-## 4. Repository Layout
+### Repo Layout
 
 ```text
 MatMul-9-over-4/
