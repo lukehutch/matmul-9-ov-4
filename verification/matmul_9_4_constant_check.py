@@ -1602,11 +1602,20 @@ def _str3_single_iv(N: int, h: int, r: int) -> tuple[_Iv, _Iv]:
     if d_rp.a > 50:
         ln_B = d_rp + _Iv(0, _Dec("1e-20"))
     else:
-        exp_neg = _Iv(_INE.next_minus(_INE.exp(-d_rp.b)), _INE.next_plus(_INE.exp(-d_rp.a)))
+        exp_neg = _Iv(_INE.next_minus(_INE.exp(d_rp.b.copy_negate())),
+                      _INE.next_plus(_INE.exp(d_rp.a.copy_negate())))
         ln_B = d_rp + (_Iv(1) + exp_neg).ln()
     ln_R = ln_P + r * ln_B
     ln_V = h * r * ln_v
     return ln_V / _IL10, ln_R / ln_V
+
+
+# Regression test for small-z branch of _str3_single_iv at (N,h,r)=(2,1,1):
+# M=2, v=18, P=8, r_str=3^3*4^6=110592, h*E+1=19 -> R_ex=2101248, R=8*(2101248/8+1)=2101256 -> eff = ln(2101256)/ln(18)
+_l10_211, _eff_211 = _str3_single_iv(2, 1, 1)
+_exact_eff_211 = _Iv(_Dec(2101256)).ln() / _ilg(18)
+boolcheck("small-z branch of _str3_single_iv encloses exact ln(2101256)/ln(18) at (2,1,1)",
+          _eff_211.a <= _exact_eff_211.a and _eff_211.b >= _exact_eff_211.b)
 
 
 # Verify all 5 Table 4 direct-sum witnesses and all 5 single-matrix witnesses in 44-digit intervals!

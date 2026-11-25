@@ -14,9 +14,9 @@ Under Pass's Lemma 2.9 tracked formal degree budget $S^{2k-1}$, Bini $\varepsilo
 
 ### Figures
 
-#### Figure 1: Universal Lower Bounds and Constructive Witnesses vs. Exponent $\tau$
+#### Figure 1: Numerical Pass Envelopes and Witness-Size Estimates vs. Exponent $\tau$
 
-![Universal lower bounds and constructive witnesses vs. target exponent tau](figures/bounds_vs_exponent.png)
+![Numerical Pass envelopes and witness-size estimates vs. target exponent tau](figures/bounds_vs_exponent.png)
 
 #### Figure 2: Asymptotic Power-Law Scaling vs. Excess $\delta = \tau - 9/4$
 
@@ -24,15 +24,15 @@ Under Pass's Lemma 2.9 tracked formal degree budget $S^{2k-1}$, Bini $\varepsilo
 
 ### Headline Scaling Laws (Polynomial-Packing Framework)
 
-Across **every** valid parameter choice $(c, d, k)$ of Pass's Theorem 4.3 as $\delta = \tau - 9/4 \to 0^+$, the minima over valid parameters obey:
+As $\delta = \tau - 9/4 \to 0^+$, the minima over valid parameter choices $(c, d, k)$ of Pass's Theorem 4.3 obey:
 
 - **Pre-Bini approximate base block side $v_k$:**
   $$\log_{10} v_k(\delta) \;=\; \Theta\!\Bigl(\delta^{-3}\,(\ln \delta^{-1})^2\Bigr)$$
-- **Post-Bini exact base block side $V = v_k^h$ (under Pass's Lemma 2.9 tracked degree budget $S^{2k-1}$, with upper witnesses certified under the proved bound $2 S^{2k}$):**
+- **Post-Bini exact base block side $V = v_k^h$ (minimum over tuples valid for an assigned interpolation-degree budget $S^{2k-1} \le D \le 2 S^{2k}$; $D = S^{2k-1}$ is Pass's Lemma 2.9 tracked budget, and upper witnesses are certified under $D = 2 S^{2k}$):**
   $$\log_{10} V(\delta) \;=\; \Theta\!\Bigl(\delta^{-5}\,(\ln \delta^{-1})^3\Bigr)$$
 - **Least uniform multiplication-count constant $C_{\min}(\tau)$ in $T(n) \le C(\tau)\,n^\tau$:**
   $$C(\tau) \;\ge\; (V - 1)^{3 - \tau} \quad \text{(when the algorithm falls back to schoolbook below } V\text{)}, \qquad \log_{10} C_{\min}(\tau) \;=\; \Theta\!\Bigl(\delta^{-5}\,(\ln \delta^{-1})^3\Bigr)$$
-  for unpruned power-of-$V$ recursion (and likewise with schoolbook or padded Strassen fallback below $V$).
+  for unpruned power-of-$V$ recursion (and likewise with schoolbook or padded Strassen fallback below $V$), minimizing over base identities certified with a sufficient budget $D \in [S^{2k-1}, 2 S^{2k}]$.
 
 For generalized Remark 4.5 iterations satisfying our finite lower-effort and $9/4$-rate hypotheses (`thm:remark45_universal`) with fixed $m_{\mathrm{t}} - n_{\mathrm{s}} > 0$ and $n_{\mathrm{s}} = \Omega(\delta^{-1})$ sources, the pre-Bini bound $\log_{10} v_k(\delta) = \Omega(\delta^{-3}\ln\delta^{-1})$ persists even at zero balancing loss ($\Delta_{\mathrm{bal}} = 1$).
 
@@ -80,13 +80,13 @@ Each stage of Pass's five-layer construction contributes a concrete algebraic fa
 3. **Layer 3: Shared-leg uncoupling ($2w - 1$ copies, $\eta = \varepsilon^w$, pole budget $P_1$).**
    - Separating one shared matrix leg across $w$ degree-$(w - 1)$ interpolated blocks produces degree-$(2w - 2)$ polynomials, requiring $2w - 1$ evaluation points for general recovery and using inner scaling $\eta = \varepsilon^w$ to clear the $\varepsilon^{w-1}$ Lagrange denominator (`prop:lagrange_poles`). This sets the single-leg pole-order budget to $P_1 = (2d + 1)w - 1$.
 
-4. **Layer 4: Three-leg $S_3$-symmetrization and round amplification ($d, k = \Omega(\delta^{-2}\ln\delta^{-1})$, $\log_{10} v_k = \Theta(\delta^{-3}(\ln\delta^{-1})^2)$).**
+4. **Layer 4: Three-leg $S_3$-symmetrization and round amplification ($d, k = \Omega(\delta^{-2}\ln\delta^{-1})$).**
    - Independent rectangular slabbing cannot beat $3 - \alpha \ge 7/3 > 9/4$ (`prop:slabbing_barrier`); Pass couples all three legs via $S_3$-symmetrization across two half-rounds, with round copy multiplier bounded by $64 = (2^3)^2$ and exponential length growth $\rho^k \le 2 L_k - 1 \le \frac{2c}{3}\rho^k$ (`thm:lk_sandwich`).
-   - Exact integer cancellation of the cubic deficit gives the logarithm-free universal law **$v_k^{4 a_0} > w^{18 b_0}$** (equivalently $v_k > w^{9/(2\delta)}$) alongside $d = \Omega(c \ln d / \delta) = \Omega(\delta^{-2}\ln\delta^{-1})$ (`thm:universal_round_and_vk`). Because $\ln w = \Omega(\delta^{-2}(\ln\delta^{-1})^2)$ (matched along the constructive parameter sequence), multiplying by $9/(2\delta)$ yields **$\log_{10} v_k = \Theta(\delta^{-3}(\ln\delta^{-1})^2)$**.
+   - Exact integer cancellation of the cubic deficit gives the logarithm-free universal law **$v_k^{4 a_0} > w^{18 b_0}$** (equivalently $v_k > w^{9/(2\delta)}$) alongside $d = \Omega(c \ln d / \delta) = \Omega(\delta^{-2}\ln\delta^{-1})$ (`thm:universal_round_and_vk`). Because $\ln w = \Omega(\delta^{-2}(\ln\delta^{-1})^2)$, multiplying by $9/(2\delta)$ gives the universal lower bound **$\log_{10} v_k = \Omega(\delta^{-3}(\ln\delta^{-1})^2)$**; the constructive choice in Theorem 4.2(i) matches this order for the minimum over Pass-valid triples.
 
-5. **Layer 5: Sequential pole-clearing degree budget and Bini conversion ($h = \Omega(\delta^{-2}\ln\delta^{-1})$, $\log_{10} V = \Theta(\delta^{-5}(\ln\delta^{-1})^3)$).**
+5. **Layer 5: Sequential pole-clearing degree budget and Bini conversion ($h = \Omega(\delta^{-2}\ln\delta^{-1})$).**
    - Composing $2k$ approximate half-rounds substitutes $\varepsilon \mapsto \varepsilon^S$ with $S = 3(2d + 1)w - 2$ at every half-round, setting Pass's Lemma 2.9 tracked formal degree budget to $S^{2k-1}$ and proving the output degree upper bound $d_\varepsilon^{(2k)} < 2 S^{2k}$ (`thm:pole_cascade`).
-   - Removing $\varepsilon$ by Bini interpolation at tensor power $h$ under the tracked degree budget forces $h > (2k - 1)\ln S / M_k = \Omega(c \ln c / \delta) = \Omega(\delta^{-2}\ln\delta^{-1})$. Raising $v_k$ to the $h$-th power multiplies $\log_{10} v_k$ by $h$, giving **$\log_{10} V = \Theta(\delta^{-5}(\ln\delta^{-1})^3)$** (`thm:asymptotic_scaling`).
+   - Removing $\varepsilon$ by Bini interpolation at tensor power $h$ under any prescribed budget $D \in [S^{2k-1}, 2 S^{2k}]$ forces $h > (2k - 1)\ln S / M_k = \Omega(c \ln c / \delta) = \Omega(\delta^{-2}\ln\delta^{-1})$. Raising $v_k$ to the $h$-th power multiplies $\log_{10} v_k$ by $h$, giving the lower bound **$\log_{10} V = \Omega(\delta^{-5}(\ln\delta^{-1})^3)$**; Theorem 4.2(ii) gives the matching upper bound for the minimum over quadruples valid for budget $D$ (`thm:asymptotic_scaling`).
 
 ---
 
@@ -110,7 +110,7 @@ MatMul-9-over-4/
 ├── matmul_9_4_constant.tex             # LaTeX manuscript
 ├── matmul_9_4_constant.bib             # Verified BibTeX references
 ├── figures/
-│   ├── bounds_vs_exponent.{pdf,png}    # Figure 1: universal LB & witnesses vs. tau
+│   ├── bounds_vs_exponent.{pdf,png}    # Figure 1: numerical Pass envelopes & witness estimates vs. tau
 │   └── scaling_vs_excess.{pdf,png}     # Figure 2: doubly-log scaling vs. delta = tau - 9/4
 ├── verification/
 │   ├── matmul_9_4_constant_check.py        # Pure-Python symbolic, global-LB & numerical audit
