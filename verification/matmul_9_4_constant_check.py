@@ -282,7 +282,7 @@ part("SECTION 2: BILINEAR ALGORITHMS AND POLYNOMIAL PACKINGS")
 # Derived from: Definition def:selected_product (Pass2026 Def. 2.1).
 # Test: Evaluates matrix polynomial multiplication on 2x2 matrices over Q[z] and verifies exact coefficient selection.
 # Mutant: Omitting one matrix inner-sum term corrupts the selected coefficient.
-eq("eq:selected_product", 104, "Prod_{I,J,K}[p,q,r](A, B) = sum_{w in K} ([w](AB)) w")
+eq("eq:selected_product", 106, "Prod_{I,J,K}[p,q,r](A, B) = sum_{w in K} ([w](AB)) w")
 A0 = [[PolyQ.const(1), PolyQ.const(2)], [PolyQ.const(3), PolyQ.const(-1)]]
 A1 = [[PolyQ.const(2), PolyQ.const(0)], [PolyQ.const(1), PolyQ.const(4)]]
 B0 = [[PolyQ.const(5), PolyQ.const(-2)], [PolyQ.const(1), PolyQ.const(3)]]
@@ -302,7 +302,7 @@ boolcheck("MUTANT REJECTED: dropping A1*B0 fails match",
 # Derived from: eq:selected_product
 # Test: Checks support cardinalities and degree closure for (a,b)=(4,5).
 # Mutant: Truncating output length to a+b-2 omits the top degree coefficient.
-eq("eq:full_shape", 111, "Full_{a,b} supports of lengths a, b, s = a + b - 1")
+eq("eq:full_shape", 113, "Full_{a,b} supports of lengths a, b, s = a + b - 1")
 la, lb = 4, 5
 ls = la + lb - 1
 I_full = set(range(la))
@@ -316,7 +316,7 @@ boolcheck("MUTANT REJECTED: support of length a+b-2 misses top degree", K_full !
 # Derived from: eq:full_shape
 # Test: Verifies exact matrix transposition identity <Full(a,b), y> == <b, rev(Mid(a, rev(y)))> over Q.
 # Mutant: Reversing shift sign fails transposition duality.
-eq("eq:mid_shape", 115, "Mid_{a,b} = Full_{a,b}^{(23)} transposition identity")
+eq("eq:mid_shape", 117, "Mid_{a,b} = Full_{a,b}^{(23)} transposition identity")
 rng = random.Random(9401)
 a_vec = [Fraction(rng.randint(-4, 4)) for _ in range(4)]
 b_vec = [Fraction(rng.randint(-4, 4)) for _ in range(5)]
@@ -335,7 +335,7 @@ boolcheck("MUTANT REJECTED: unreversed index order breaks duality", lhs_ip != ba
 # Derived from: eq:full_shape, eq:mid_shape
 # Test: Checks effort equality between Full_{a,b}[p,q,r] and Mid_{a,b}[p,q,r] across parameters.
 # Mutant: Using max instead of min inflates Mid effort above s*p*q*r.
-eq("eq:effort_def", 122, "eff(Full_{a,b}[p,q,r]) = eff(Mid_{a,b}[p,q,r]) = s*p*q*r")
+eq("eq:effort_def", 124, "eff(Full_{a,b}[p,q,r]) = eff(Mid_{a,b}[p,q,r]) = s*p*q*r")
 for aa, bb, pp, qq, rr in [(3, 4, 2, 3, 5), (5, 2, 4, 1, 3)]:
     ss = aa + bb - 1
     eff_full = pp * qq * rr * min(aa + bb - 1, aa + ss - 1, bb + ss - 1)
@@ -349,7 +349,7 @@ boolcheck("MUTANT REJECTED: max instead of min gives wrong Mid effort", bad_eff_
 # Derived from: eq:selected_product
 # Test: Evaluates Strassen's 7-product bilinear packing symbolically over Q[a11..b22].
 # Mutant: Flipping one sign in Strassen's decoder corrupts the matrix product.
-eq("eq:exact_pp", 131, "Exact PP bilinear identity (verified on Strassen 2x2, R=7)")
+eq("eq:exact_pp", 133, "Exact PP bilinear identity (verified on Strassen 2x2, R=7)")
 a11, a12, a21, a22 = [PolyQ.var(v) for v in ("a11", "a12", "a21", "a22")]
 b11, b12, b21, b22 = [PolyQ.var(v) for v in ("b11", "b12", "b21", "b22")]
 m1 = (a11 + a22) * (b11 + b22)
@@ -373,7 +373,7 @@ part("SECTION 3.1: LAYER 1 ZERO-GAP SMUGGLING AND CUBIC RATE FLOOR")
 # Derived from: eq:full_shape
 # Test: Exact symbolic polynomial expansion in Q[z, A, P1..P5] for c=4, t=2.
 # Mutant: Changing shift sign to +z^t destroys cancellation of interior terms.
-eq("eq:pure_telescoping", 153, "Pure telescoping sum cancels interior terms")
+eq("eq:pure_telescoping", 155, "Pure telescoping sum cancels interior terms")
 A_s = PolyQ.var("A_s")
 Ps = [PolyQ.var(f"P{j}") for j in range(1, 6)]
 t_val = 2
@@ -391,7 +391,7 @@ mutant("plus sign instead of minus breaks telescoping", bad_tele - (A_s * Ps[0] 
 # Derived from: eq:pure_telescoping, eq:effort_def
 # Test: Exhaustive integer verification over 1 <= a,b,c,t <= 11 with ct >= a+b-1.
 # Mutant: Violating ct >= a+b-1 flips the effort inequality.
-eq("eq:pure_tele_barrier", 162, "Zero-gain barrier for pure (c+1)-for-c telescoping")
+eq("eq:pure_tele_barrier", 164, "Zero-gain barrier for pure (c+1)-for-c telescoping")
 ok_bar = True
 for a in range(1, 9):
     for b in range(1, 9):
@@ -408,7 +408,7 @@ boolcheck("MUTANT REJECTED: ct < a+b-1 violates barrier", not ((3 + 1) * (3 + 3 
 # Derived from: eq:pure_tele_barrier
 # Test: Exact symbolic polynomial identity in Q[a, b, c, t].
 # Mutant: Replacing (c+1) by (c+2) leaves nonzero discrepancy -(a+b-1).
-eq("eq:pure_tele_diff", 169, "Exact effort difference identity")
+eq("eq:pure_tele_diff", 171, "Exact effort difference identity")
 a_s, b_s, c_s, t_s = [PolyQ.var(v) for v in ("a", "b", "c", "t")]
 symcheck("exact effort difference identity",
          c_s * (a_s + b_s + t_s - 1) - (c_s + 1) * (a_s + b_s - 1) - (c_s * t_s - (a_s + b_s - 1)))
@@ -420,7 +420,7 @@ mutant("using c+2 instead of c+1 fails identity",
 # Derived from: eq:pure_telescoping
 # Test: Exact symbolic polynomial verification over Q[eps, z, a_i, p_{j,i}, q_u] for a=3, b=2, t=1, c=6.
 # Mutant: Truncating Q at c*t < s drops top coefficient of Q_tilde.
-eq("eq:primal_identity", 183, "Primal packing telescoping identity with eps z^b Q")
+eq("eq:primal_identity", 185, "Primal packing telescoping identity with eps z^b Q")
 eps = PolyQ.var("eps")
 la, lb, lt, lc = 3, 2, 1, 6
 ls = la + lb - 1
@@ -458,7 +458,7 @@ mutant("truncating c < s fails to recover Q_tilde",
 # Derived from: eq:primal_identity
 # Test: Exact symbolic verification at c=6=a+2b-1 (zero error) and c=5 (nonzero eps^0 leakage at z^5).
 # Mutant: c = a+2b-2 = 5 leaks -A*P_6 into the middle-product window.
-eq("eq:gap_condition", 188, "Gap condition ct >= a + 2b - 1 necessity and sufficiency")
+eq("eq:gap_condition", 190, "Gap condition ct >= a + 2b - 1 necessity and sufficiency")
 expected_mid = A_p * Q_tilde
 ok_mid = True
 for k in range(lb):
@@ -477,7 +477,7 @@ mutant("at c=5 < a+2b-1=6, [z^{s+1}]W has nonzero eps^0 leakage -a0*p5_0", bad_l
 # Derived from: eq:gap_condition, eq:effort_def
 # Test: Exact symbolic polynomial identity in Q[b].
 # Mutant: Dropping the middle product (+1 instead of +2) gives wrong surplus.
-eq("eq:effort_surplus", 194, "Exact positive effort surplus (c+2)(2b-1) - c(2b) = b - 1")
+eq("eq:effort_surplus", 196, "Exact positive effort surplus (c+2)(2b-1) - c(2b) = b - 1")
 symcheck("surplus equals b - 1 at c = 3b - 1", (3 * b_s + 1) * (2 * b_s - 1) - (3 * b_s - 1) * (2 * b_s) - (b_s - 1))
 mutant("dropping middle product gives wrong surplus", (3 * b_s) * (2 * b_s - 1) - (3 * b_s - 1) * (2 * b_s) - (b_s - 1))
 
@@ -486,7 +486,7 @@ mutant("dropping middle product gives wrong surplus", (3 * b_s) * (2 * b_s - 1) 
 # Derived from: eq:primal_identity, eq:gap_condition
 # Test: Live exact-Q verification at a=2, b=2, t=1, c=5 confirming nonzero eps^{-1} pole.
 # Mutant: Claiming zero eps^{-1} pole contradicts nonzero Mid(A, Q1).
-eq("eq:multi_eps_pole", 213, "Same-slot multi-eps pole collision")
+eq("eq:multi_eps_pole", 215, "Same-slot multi-eps pole collision")
 A_num = [Fraction(2), Fraction(3)]
 Q1_num = [Fraction(1), Fraction(4), Fraction(2)]
 Q2_num = [Fraction(5), Fraction(1), Fraction(3)]
@@ -502,7 +502,7 @@ boolcheck("MUTANT REJECTED: claiming zero eps^{-1} pole fails", not all(x == 0 f
 # Derived from: eq:gap_condition
 # Test: Cleared-denominator symbolic identity (c-1) + 3 == c + 2 in Q[c].
 # Mutant: 1 + 3/c != (c+2)/(c-1) (cleared: (c+3)(c-1) != c(c+2)).
-eq("eq:rho_def", 224, "rho(c) = 1 + 3/(c-1) = (c+2)/(c-1)")
+eq("eq:rho_def", 226, "rho(c) = 1 + 3/(c-1) = (c+2)/(c-1)")
 symcheck("(c - 1) + 3 == c + 2", (c_s - 1) + 3 - (c_s + 2))
 mutant("1 + 3/c != (c+2)/(c-1)", (c_s + 3) * (c_s - 1) - c_s * (c_s + 2))
 
@@ -511,7 +511,7 @@ mutant("1 + 3/c != (c+2)/(c-1)", (c_s + 3) * (c_s - 1) - c_s * (c_s + 2))
 # Derived from: eq:rho_def
 # Test: Numerical check at c=6 and c=10^4 (approaching 9/4).
 # Mutant: Dropping outer 3/2 gives 3/2 instead of 9/4.
-eq("eq:tau_c_def", 229, "Threshold exponent tau(c) -> 9/4")
+eq("eq:tau_c_def", 231, "Threshold exponent tau(c) -> 9/4")
 tau_6 = 1.5 * math.log(8.0 / 5.0) / math.log(8.0 / 6.0)
 tau_1e4 = 1.5 * math.log1p(3.0 / 9999.0) / math.log1p(2.0 / 10000.0)
 check("tau(6) matches exact log ratio", tau_6, 2.4506408684426146, rtol=1e-12)
@@ -523,7 +523,7 @@ numutant("dropping outer 3/2 fails 9/4 limit", tau_1e4 / 1.5, 2.25, rtol=1e-3)
 # Derived from: eq:rho_def
 # Test: Exact symbolic expansion in Q[c] and boundary check at c >= 2.
 # Mutant: (c+2)(c-1)^2 = c^3 - 3c is false (missing +2).
-eq("eq:cubic_identity", 237, "(c+2)(c-1)^2 = c^3 - (3c - 2) < c^3")
+eq("eq:cubic_identity", 239, "(c+2)(c-1)^2 = c^3 - (3c - 2) < c^3")
 symcheck("(c+2)(c-1)^2 == c^3 - (3c - 2)", (c_s + 2) * ((c_s - 1) ** 2) - ((c_s ** 3) - (3 * c_s - 2)))
 boolcheck("strict positivity 3c - 2 >= 4 for c >= 2", all(3 * cc - 2 >= 4 for cc in range(2, 50)))
 mutant("omitting +2 fails identity", (c_s + 2) * ((c_s - 1) ** 2) - ((c_s ** 3) - 3 * c_s))
@@ -533,7 +533,7 @@ mutant("omitting +2 fails identity", (c_s + 2) * ((c_s - 1) ** 2) - ((c_s ** 3) 
 # Derived from: eq:cubic_identity, eq:tau_c_def
 # Test: Exact rational check across c=2..100.
 # Mutant: Reversing exponent pair (9, 6) flips inequality.
-eq("eq:tau_strict_gt_94", 242, "rho(c)^6 > ((c+2)/c)^9 implies tau(c) > 9/4")
+eq("eq:tau_strict_gt_94", 244, "rho(c)^6 > ((c+2)/c)^9 implies tau(c) > 9/4")
 boolcheck("rho(c)^6 > ((c+2)/c)^9 exact over Q for c=2..100",
           all(Fraction(cc + 2, cc - 1) ** 6 > Fraction(cc + 2, cc) ** 9 for cc in range(2, 101)))
 boolcheck("MUTANT REJECTED: reversed exponents fail at c=6",
@@ -544,7 +544,7 @@ boolcheck("MUTANT REJECTED: reversed exponents fail at c=6",
 # Derived from: eq:tau_c_def
 # Test: Exact truncated power series of ln(1 + 3x/(1-x)) / ln(1 + 2x) through x^2 in Q[x] + numerical c=10^6 check.
 # Mutant: Replacing 9/(8c) with 9/(4c) fails exact series coefficient.
-eq("eq:tau_laurent", 247, "Laurent expansion tau(c) = 9/4 + 9/(8c) + O(c^{-2})")
+eq("eq:tau_laurent", 249, "Laurent expansion tau(c) = 9/4 + 9/(8c) + O(c^{-2})")
 # Exact series: ln(1 + 3x/(1-x)) = 3x - (3/2)x^2 + O(x^3); ln(1 + 2x) = 2x - 2x^2 + O(x^3).
 # Ratio (3/2) * (3x - (3/2)x^2) = (9/4 + 9/8 x)*(2x - 2x^2) + O(x^3)
 x_s = PolyQ.var("x")
@@ -564,7 +564,7 @@ check("c*(tau(c) - 9/4) at c=10^6 matches 9/8 = 1.125", 1e6 * (tau_1e6 - 2.25), 
 # Derived from: eq:cubic_identity, eq:tau_c_def
 # Test: Verifies exact c_min across all 8 benchmark exponents.
 # Mutant: Shifting exponent 6 b_0 -> 5 b_0 gives wrong c_min at tau=2.260.
-eq("eq:c_min_exact_poly", 252, "Exact polynomial characterization of tau(c) < 9/4 + a_0/b_0")
+eq("eq:c_min_exact_poly", 254, "Exact polynomial characterization of tau(c) < 9/4 + a_0/b_0")
 expected_cmins = [(11, 20, 3), (89, 200, 3), (1, 4, 5), (121, 1000, 10), (71, 1000, 17), (1, 20, 23), (1, 100, 113), (1, 1000, 1126)]
 for a0, b0, cmin_exp in expected_cmins:
     c_test = 2
@@ -581,7 +581,7 @@ boolcheck("MUTANT REJECTED: exponent 5*b0 yields wrong c_min", c_mut != 113, f"m
 # Derived from: eq:c_min_exact_poly
 # Test: Checks inequality holds at all 8 exact c_min values.
 # Mutant: Replacing 16 with 8 violates the inequality at exact c_min for tau=2.260.
-eq("eq:c_min_bound", 257, "Explicit quadratic lower bound 16 a_0 c^2 > 6 b_0 (3c - 2)")
+eq("eq:c_min_bound", 259, "Explicit quadratic lower bound 16 a_0 c^2 > 6 b_0 (3c - 2)")
 for a0, b0, cmin_exp in expected_cmins:
     boolcheck(f"16*a0*c^2 > 6*b0*(3c-2) at c={cmin_exp}", 16 * a0 * cmin_exp ** 2 > 6 * b0 * (3 * cmin_exp - 2))
 boolcheck("MUTANT REJECTED: factor 8 fails at tau=2.260 (c=113)", not (8 * 1 * 113 ** 2 > 6 * 100 * (3 * 113 - 2)))
@@ -591,7 +591,7 @@ boolcheck("MUTANT REJECTED: factor 8 fails at tau=2.260 (c=113)", not (8 * 1 * 1
 # Derived from: eq:tau_c_def
 # Test: Exact polynomial quotient check (1 - x/2) == (1 + x/2)(1 - x) + O(x^2).
 # Mutant: Flipping sign to (1 + x/2) gives linear coefficient +3/2 instead of +1/2.
-eq("eq:tau_laurent_step", 266, "Intermediate Taylor quotient step")
+eq("eq:tau_laurent_step", 268, "Intermediate Taylor quotient step")
 step_res = (1 - Fraction(1, 2) * x_s) - (1 + Fraction(1, 2) * x_s) * (1 - x_s)
 symcheck("O(x^0) and O(x^1) terms match (1 + x/2) exactly",
          step_res.coeff_of("x", 0) + step_res.coeff_of("x", 1))
@@ -603,7 +603,7 @@ mutant("plus sign in numerator fails O(x^1) match", bad_step_res.coeff_of("x", 1
 # Derived from: eq:cubic_identity
 # Test: Exact cleared-denominator symbolic identity in Q[c] for (a_0, b_0) = (1, 2).
 # Mutant: Changing 18 b_0 to 16 b_0 breaks factorization.
-eq("eq:c_factorization", 274, "Exact algebraic factorization of rate ratio")
+eq("eq:c_factorization", 276, "Exact algebraic factorization of rate ratio")
 lhs_f = ((c_s + 2) ** 20) * ((c_s - 1) ** 24)
 rhs_f = (((c_s ** 3) - (3 * c_s - 2)) ** 12) * ((c_s + 2) ** 8)
 symcheck("exact factorization identity (a0=1, b0=2)", lhs_f - rhs_f)
@@ -619,7 +619,7 @@ part("SECTION 3.2: LAYER 2 MULTIVARIATE PRIMAL-DUAL BALANCING")
 # Derived from: eq:primal_identity
 # Test: Checks exact tensor-power count at c=6, d=4 (6^8 = 1679616).
 # Mutant: c^d instead of c^{2d} undercounts dual variables.
-eq("eq:u_def", 289, "u(c, d) = c^{2d}")
+eq("eq:u_def", 291, "u(c, d) = c^{2d}")
 boolcheck("u(6, 4) == 6^8 == 1679616", 6 ** (2 * 4) == 1679616)
 boolcheck("MUTANT REJECTED: c^d != c^{2d}", 6 ** 4 != 6 ** 8)
 
@@ -628,7 +628,7 @@ boolcheck("MUTANT REJECTED: c^d != c^{2d}", 6 ** 4 != 6 ** 8)
 # Derived from: eq:u_def
 # Test: Verifies M_d against brute-force enumeration of all (c+2)^{2d} words for c=2, d=3.
 # Mutant: Dropping the square on N_h gives (c+2)^d instead of M_d.
-eq("eq:Md_exact", 300, "Exact balanced-word count M_d(c)")
+eq("eq:Md_exact", 302, "Exact balanced-word count M_d(c)")
 c_e, d_e = 2, 3
 bf_count = 0
 for w_primal in itertools.product(range(c_e + 2), repeat=d_e):
@@ -647,7 +647,7 @@ boolcheck("MUTANT REJECTED: unsquared sum != M_3(2)", bad_Md != Md_formula)
 # Derived from: eq:Md_exact
 # Test: Exact integer verification across c=2..8, d=1..12.
 # Mutant: Dividing by d instead of d+1 violates the lower bound at c=2, d=1.
-eq("eq:Md_bounds", 305, "Cauchy-Schwarz two-sided bounds on M_d(c)")
+eq("eq:Md_bounds", 307, "Cauchy-Schwarz two-sided bounds on M_d(c)")
 ok_md = True
 for cc in range(2, 9):
     for dd in range(1, 13):
@@ -663,7 +663,7 @@ boolcheck("MUTANT REJECTED: (c+2)^{2d}/d fails at c=2, d=1 (16 > 10)", not (16 <
 # Derived from: eq:Md_exact
 # Test: Compares exact log_exact_Md against Stirling formula at c=6, d=800 (rel error < 2e-3).
 # Mutant: Using 2*pi instead of 4*pi introduces sqrt(2) (41%) error.
-eq("eq:Md_stirling", 310, "Gaussian-peak asymptotic formula for M_d(c)")
+eq("eq:Md_stirling", 312, "Gaussian-peak asymptotic formula for M_d(c)")
 c_st, d_st = 6, 800
 exact_l = log_exact_Md(c_st, d_st)
 pb = 1.0 / (c_st + 2.0)
@@ -678,7 +678,7 @@ numutant("2*pi instead of 4*pi fails by sqrt(2)", math.exp(exact_l - bad_asymp_l
 # Derived from: eq:Md_bounds
 # Test: Exact integer check at c=6, d=2 (floor(8^4 / 3) = 1365 <= M_2(6) = 2501).
 # Mutant: Ceiling instead of floor disagrees with floor(4096/3).
-eq("eq:w_def", 324, "w(c, d) = floor((c+2)^{2d}/(d+1))")
+eq("eq:w_def", 326, "w(c, d) = floor((c+2)^{2d}/(d+1))")
 w_6_2 = (8 ** 4) // 3
 m_6_2 = sum((math.comb(2, h) * 7 ** (2 - h)) ** 2 for h in range(3))
 boolcheck("w(6, 2) = 1365 <= M_2(6) = 2501", w_6_2 == 1365 and w_6_2 <= m_6_2)
@@ -694,7 +694,7 @@ part("SECTION 3.3: LAYER 3 SHARED-LEG UNCOUPLING AND SEPARATION")
 # Derived from: eq:w_def
 # Test: Exact symbolic identity in Q[d, w].
 # Mutant: Dropping w-1 from p_R gives wrong P_1 = 2dw.
-eq("eq:single_leg_poles", 344, "Single-leg pole orders and pole sum P_1 = (2d+1)w - 1")
+eq("eq:single_leg_poles", 346, "Single-leg pole orders and pole sum P_1 = (2d+1)w - 1")
 d_s, w_s = PolyQ.var("d"), PolyQ.var("w")
 symcheck("P_1 == 0 + (d*w + w - 1) + d*w == (2d+1)w - 1", (d_s * w_s + w_s - 1) + d_s * w_s - ((2 * d_s + 1) * w_s - 1))
 symcheck("N_1 == 0 + d*w + (d*w + 2*w - 2) == 2(d+1)w - 2", d_s * w_s + (d_s * w_s + 2 * w_s - 2) - (2 * (d_s + 1) * w_s - 2))
@@ -705,7 +705,7 @@ mutant("dropping w-1 fails P_1", 2 * d_s * w_s - ((2 * d_s + 1) * w_s - 1))
 # Derived from: eq:single_leg_poles
 # Test: Exact polynomial check of numerator/denominator for w=3, i=1 in Q[xi, eps].
 # Mutant: Multiplying only by eps^{w-2} leaves a nonzero eps^0 numerator over eps^1 denominator at xi=0.
-eq("eq:lagrange_basis", 355, "Lagrange basis at nodes i + eps*j has pole order w - 1")
+eq("eq:lagrange_basis", 357, "Lagrange basis at nodes i + eps*j has pole order w - 1")
 xi = PolyQ.var("xi")
 w_l, i_l = 3, 1
 # ell_{1,j}(xi) = num_j(xi, eps) / (denom_const_j * eps^{w-1})
@@ -740,7 +740,7 @@ boolcheck("MUTANT REJECTED: eps^{w-2} leaves nonzero eps^{-1} pole at xi=0", c_a
 # Derived from: eq:exact_pp
 # Test: Exhaustive check over all M^4 quadruples for M=2..9 verifying exact maximum equals floor((M-1)/2)^2.
 # Mutant: Claiming max is (M-1)^2 fails strict tightness for all M >= 3.
-eq("eq:openai_tight_deg", 369, "Exact tight eps-degree floor((M-1)/2)^2 for OpenAI Prop. 3.1")
+eq("eq:openai_tight_deg", 371, "Exact tight eps-degree floor((M-1)/2)^2 for OpenAI Prop. 3.1")
 for M in range(2, 10):
     max_gh2 = max((g - h) ** 2 for g in range(1, M + 1) for h in range(1, M + 1)
                   for u in range(1, M + 1) for v in range(1, M + 1)
@@ -759,7 +759,7 @@ part("SECTION 3.4: LAYER 4 SLABBING BARRIER AND EXACT L_k SANDWICH")
 # Derived from: eq:tau_strict_gt_94
 # Test: Exact rational arithmetic check at alpha=1/2 and alpha=2/3.
 # Mutant: alpha = 3/4 would reach 9/4, violating alpha <= 2/3.
-eq("eq:slabbing_barrier", 391, "3 - alpha >= 7/3 > 9/4 for alpha <= 2/3")
+eq("eq:slabbing_barrier", 393, "3 - alpha >= 7/3 > 9/4 for alpha <= 2/3")
 boolcheck("3 - 2/3 == 7/3 > 9/4", Fraction(3) - Fraction(2, 3) == Fraction(7, 3) > Fraction(9, 4))
 boolcheck("3 - 1/2 == 5/2 == 9/4 + 1/4", Fraction(3) - Fraction(1, 2) == Fraction(9, 4) + Fraction(1, 4))
 boolcheck("MUTANT REJECTED: alpha=3/4 hits 9/4 (violates alpha <= 2/3)", not (Fraction(3) - Fraction(3, 4) > Fraction(9, 4)))
@@ -769,7 +769,7 @@ boolcheck("MUTANT REJECTED: alpha=3/4 hits 9/4 (violates alpha <= 2/3)", not (Fr
 # Derived from: eq:u_def, eq:w_def
 # Test: Exact integer check at c=6, d=10.
 # Mutant: Omitting square gives floor(w/u) instead of floor(w/u)^2.
-eq("eq:lambda_def", 402, "Lambda(c, d) = floor(w/u)^2")
+eq("eq:lambda_def", 404, "Lambda(c, d) = floor(w/u)^2")
 w_6_10 = (8 ** 20) // 11
 u_6_10 = 6 ** 20
 lam_6_10 = (w_6_10 // u_6_10) ** 2
@@ -781,7 +781,7 @@ boolcheck("MUTANT REJECTED: unsquared floor != Lambda", (w_6_10 // u_6_10) != la
 # Derived from: eq:gap_condition
 # Test: Checks shift condition c*t_j >= 3*L_j + t_j - 1 at every step for c=6, j=0..15.
 # Mutant: Floor instead of ceiling violates c*t >= 3*L + t - 1 at j=0, c=6.
-eq("eq:Lk_recurrence", 409, "Ceiling recurrence L_{j+1} = L_j + ceil((3 L_j - 1)/(c - 1))")
+eq("eq:Lk_recurrence", 411, "Ceiling recurrence L_{j+1} = L_j + ceil((3 L_j - 1)/(c - 1))")
 L_cur = 1
 ok_shift = True
 for j in range(15):
@@ -798,7 +798,7 @@ boolcheck("MUTANT REJECTED: floor gives t=0 violating c*t >= 3L+t-1", not (6 * t
 # Derived from: eq:w_def, eq:lambda_def
 # Test: Checks exact integer value at c=6, d=10, k=2.
 # Mutant: w * Lambda^k instead of w^2 * Lambda^k disagrees.
-eq("eq:vk_def", 414, "v_k = w^2 * Lambda^k")
+eq("eq:vk_def", 416, "v_k = w^2 * Lambda^k")
 vk_test = (w_6_10 ** 2) * (lam_6_10 ** 2)
 boolcheck("v_2(6, 10) matches exact formula", vk_test == (w_6_10 * lam_6_10) ** 2)
 boolcheck("MUTANT REJECTED: w * Lambda^k != v_k", w_6_10 * (lam_6_10 ** 2) != vk_test)
@@ -808,7 +808,7 @@ boolcheck("MUTANT REJECTED: w * Lambda^k != v_k", w_6_10 * (lam_6_10 ** 2) != vk
 # Derived from: eq:w_def, eq:Lk_recurrence
 # Test: Checks exact compression rate ratio w^3 * v_k^3 / C_k == E_k at c=6, d=10, k=2.
 # Mutant: Replacing w^9 by w^6 breaks identity.
-eq("eq:Ek_def", 419, "E_k = 64^k * w^9 * (2 L_k - 1)^{6d}")
+eq("eq:Ek_def", 421, "E_k = 64^k * w^9 * (2 L_k - 1)^{6d}")
 L2_6 = exact_Lk(6, 2)
 Ck_test = Fraction(lam_6_10 ** (3 * 2), (64 ** 2) * ((2 * L2_6 - 1) ** (6 * 10)))
 Ek_from_C = Fraction((w_6_10 ** 3) * (vk_test ** 3), 1) / Ck_test
@@ -822,7 +822,7 @@ boolcheck("MUTANT REJECTED: w^6 instead of w^9 breaks identity",
 # Derived from: eq:rho_def, eq:Lk_recurrence
 # Test: Exact rational check over c=2..25, k=0..20.
 # Mutant: Tightening upper bound to (c/6) rho^k fails at c=6, k=5.
-eq("eq:lk_sandwich", 430, "Exact two-sided sandwich on L_k and 2 L_k - 1")
+eq("eq:lk_sandwich", 432, "Exact two-sided sandwich on L_k and 2 L_k - 1")
 ok_sand = True
 for cc in range(2, 26):
     rho_f = Fraction(cc + 2, cc - 1)
@@ -841,7 +841,7 @@ boolcheck("MUTANT REJECTED: (c/6)*rho^k fails upper bound at c=6, k=5",
 # Derived from: eq:lk_sandwich
 # Test: Exact rational verification for c=2..30, k=0..25.
 # Mutant: Using j_0 + 1 in factor (2 j_0 + 3) fails at c=10, k=3.
-eq("eq:lk_ceiling_boost", 435, "Ceiling-boost lower bound 2 L_k - 1 >= (2 j_0 + 1) rho^{k - j_0}")
+eq("eq:lk_ceiling_boost", 437, "Ceiling-boost lower bound 2 L_k - 1 >= (2 j_0 + 1) rho^{k - j_0}")
 ok_boost = True
 for cc in range(2, 31):
     j0 = (cc - 1) // 3
@@ -864,7 +864,7 @@ boolcheck("MUTANT REJECTED: (2*j0+3) fails at c=10, k=3",
 # Derived from: eq:Lk_recurrence, eq:rho_def
 # Test: Cleared-denominator symbolic identities in Q[c]: 3 + (c-1) == c+2 and 3(c-3) + (c-3)(c-1) == (c-3)(c+2).
 # Mutant: Replacing (c-3) by (c-2) breaks the shift identity.
-eq("eq:lk_step_ineq", 443, "Fixed-point shift identities for L_k recursion")
+eq("eq:lk_step_ineq", 445, "Fixed-point shift identities for L_k recursion")
 symcheck("3 + (c - 1) == c + 2 (i.e. 1/(c-1) + 1/3 == rho/3)", 3 + (c_s - 1) - (c_s + 2))
 symcheck("3(c-3) + (c-3)(c-1) == (c-3)(c+2)", 3 * (c_s - 3) + (c_s - 3) * (c_s - 1) - (c_s - 3) * (c_s + 2))
 mutant("replacing c-3 by c-2 breaks shift identity", 3 * (c_s - 3) + (c_s - 2) * (c_s - 1) - (c_s - 2) * (c_s + 2))
@@ -879,7 +879,7 @@ part("SECTION 3.5: LAYER 5 POLE CASCADE, BINI CONVERSION, AND C(tau)")
 # Derived from: eq:single_leg_poles
 # Test: Exact symbolic tripling check in Q[d, w].
 # Mutant: Doubling instead of tripling fails three-leg symmetrization count.
-eq("eq:half_round_poles", 462, "Half-round pole sum P_half and max positive degree N_half")
+eq("eq:half_round_poles", 464, "Half-round pole sum P_half and max positive degree N_half")
 P_half_s = 3 * ((2 * d_s + 1) * w_s - 1)
 N_half_s = 6 * ((d_s + 1) * w_s - 1)
 symcheck("P_half == 3 * P_1", P_half_s - 3 * ((2 * d_s + 1) * w_s - 1))
@@ -891,7 +891,7 @@ mutant("2*P_1 != P_half", 2 * ((2 * d_s + 1) * w_s - 1) - P_half_s)
 # Derived from: eq:half_round_poles
 # Test: Exact integer check of recurrence vs S^ell for ell=0..8 at d=2, w=5.
 # Mutant: Linear growth ell*P_half + 1 disagrees with S^ell for ell >= 2.
-eq("eq:pole_cascade_exact", 473, "Exact induction P_seq(ell) + 1 = S^ell")
+eq("eq:pole_cascade_exact", 475, "Exact induction P_seq(ell) + 1 = S^ell")
 P_h = 3 * ((2 * 2 + 1) * 5 - 1)
 S_val = P_h + 1
 p_cur = 0
@@ -908,7 +908,7 @@ boolcheck("MUTANT REJECTED: linear ell*P_h + 1 != S^ell at ell=2", 2 * P_h + 1 !
 # Derived from: eq:half_round_poles, eq:pole_cascade_exact
 # Test: Exact cleared-denominator symbolic check in Q[d, w] + concrete ratio in (1, 2).
 # Mutant: Claiming ratio <= 1 is false.
-eq("eq:deps_upper", 478, "Exact geometric upper bound on composed eps-degree")
+eq("eq:deps_upper", 480, "Exact geometric upper bound on composed eps-degree")
 S_s = P_half_s + 1
 symcheck("N_half * ((2d+1)w - 1) == (S - 1) * (2(d+1)w - 2)",
          N_half_s * ((2 * d_s + 1) * w_s - 1) - (S_s - 1) * (2 * (d_s + 1) * w_s - 2))
@@ -921,7 +921,7 @@ boolcheck("MUTANT REJECTED: ratio <= 1 is false", not (ratio_d1_w3 <= Fraction(1
 # Derived from: eq:pole_cascade_exact
 # Test: Exhaustive integer check for h in 2..6, ell in 2..6, D_half in 1..6.
 # Mutant: At ell=1, equality holds (strict inequality fails).
-eq("eq:multivar_bini_worse", 484, "Iterated multivariate Bini strictly exceeds univariate")
+eq("eq:multivar_bini_worse", 486, "Iterated multivariate Bini strictly exceeds univariate")
 boolcheck("h*D_half^ell + 1 < (h*D_half + 1)^ell for h,ell in 2..6, D_half in 1..6",
           all(hh * (DD ** ll) + 1 < (hh * DD + 1) ** ll for hh in range(2, 7) for ll in range(2, 7) for DD in range(1, 7)))
 boolcheck("MUTANT REJECTED: fails at ell=1", not (2 * (3 ** 1) + 1 < (2 * 3 + 1) ** 1))
@@ -931,7 +931,7 @@ boolcheck("MUTANT REJECTED: fails at ell=1", not (2 * (3 ** 1) + 1 < (2 * 3 + 1)
 # Derived from: eq:pole_cascade_exact
 # Test: Exact symbolic identity in Q[d, w, P_ell].
 # Mutant: Replacing S with P_half breaks factorization.
-eq("eq:pole_induct", 493, "Inductive step of pole cascade")
+eq("eq:pole_induct", 495, "Inductive step of pole cascade")
 Pl_s = PolyQ.var("P_ell")
 symcheck("S + S*P_ell == S*(1 + P_ell)", (P_half_s + 1) + S_s * Pl_s - S_s * (1 + Pl_s))
 mutant("P_half + S*P_ell != S*(1 + P_ell)", P_half_s + S_s * Pl_s - S_s * (1 + Pl_s))
@@ -941,11 +941,11 @@ mutant("P_half + S*P_ell != S*(1 + P_ell)", P_half_s + S_s * Pl_s - S_s * (1 + P
 # Derived from: eq:vk_def, eq:Ek_def, eq:deps_upper
 # Test: Toy exact check with v_k=10, E_k=600, tau=2.8, d_eps=5.
 # Mutant: h too small violates Bini condition.
-eq("eq:V_post_def", 504, "V = v_k^h")
+eq("eq:V_post_def", 506, "V = v_k^h")
 boolcheck("10^4 == 10000", 10 ** 4 == 10000)
 boolcheck("MUTANT REJECTED: 10*4 != 10^4", 10 * 4 != 10 ** 4)
 
-eq("eq:R_exact_def", 509, "R_exact <= (h * d_eps + 1) * E_k^h")
+eq("eq:R_exact_def", 511, "R_exact <= (h * d_eps + 1) * E_k^h")
 h_toy, deps_toy, Ek_toy, vk_toy, tau_toy = 140, 5, 600, 10, 2.8
 log_Rex = math.log(h_toy * deps_toy + 1) + h_toy * math.log(Ek_toy)
 log_Vtau = h_toy * tau_toy * math.log(vk_toy)
@@ -953,7 +953,7 @@ boolcheck("toy Bini exact rank < V^tau at h=140", log_Rex < log_Vtau)
 boolcheck("MUTANT REJECTED: omitting (h*d_eps+1) understates log_Rex",
           h_toy * math.log(Ek_toy) < log_Rex - 5.0)
 
-eq("eq:bini_condition", 514, "(h * d_eps + 1) * E_k^h < V^tau")
+eq("eq:bini_condition", 516, "(h * d_eps + 1) * E_k^h < V^tau")
 h_too_small = 50
 boolcheck("h=50 fails toy Bini condition while h=140 passes",
           math.log(h_too_small * deps_toy + 1) + h_too_small * math.log(Ek_toy) >= h_too_small * tau_toy * math.log(vk_toy)
@@ -966,20 +966,20 @@ boolcheck("MUTANT REJECTED: h=1 fails toy Bini condition",
 # Derived from: eq:V_post_def, eq:bini_condition
 # Test: Checks all three bounds on concrete V=1000, tau=2.5, R=1000^2.45.
 # Mutant: Claiming C < (V-1)^{3-tau} violates T(V-1) <= C*(V-1)^tau.
-eq("eq:C_schoolbook", 526, "Schoolbook cutoff bound C >= (V - 1)^{3 - tau}")
+eq("eq:C_schoolbook", 528, "Schoolbook cutoff bound C >= (V - 1)^{3 - tau}")
 V_t, tau_t = 1000, 2.5
 C_sb_min = (V_t - 1) ** (3.0 - tau_t)
 check("C_sb_min * (V-1)^tau == (V-1)^3", C_sb_min * (V_t - 1) ** tau_t, float((V_t - 1) ** 3), rtol=1e-12)
 numutant("0.5 * C_sb_min violates T(V-1) <= C*(V-1)^tau", 0.5 * C_sb_min * (V_t - 1) ** tau_t, float((V_t - 1) ** 3), rtol=1e-6)
 
-eq("eq:C_strassen", 531, "Strassen cutoff bound C >= ((V - 1)/2)^{log2(7) - tau}")
+eq("eq:C_strassen", 533, "Strassen cutoff bound C >= ((V - 1)/2)^{log2(7) - tau}")
 n_pow2 = 2 ** int(math.floor(math.log2(V_t - 1)))
 log2_7 = math.log2(7.0)
 boolcheck("power-of-2 witness n=512 satisfies (V-1)/2 < n <= V-1", (V_t - 1) / 2.0 < n_pow2 <= V_t - 1)
 boolcheck("T(n)/n^tau > ((V-1)/2)^{log2(7)-tau}", n_pow2 ** (log2_7 - tau_t) > ((V_t - 1) / 2.0) ** (log2_7 - tau_t))
 boolcheck("MUTANT REJECTED: omitting /2 can exceed n=512 bound", not (n_pow2 ** (log2_7 - tau_t) > (V_t - 1) ** (log2_7 - tau_t)))
 
-eq("eq:C_padding", 536, "Power-of-V padding bound C_pad >= R^2/(V+1)^tau >= V^4/(V+1)^tau")
+eq("eq:C_padding", 538, "Power-of-V padding bound C_pad >= R^2/(V+1)^tau >= V^4/(V+1)^tau")
 R_t = int(V_t ** 2.45)
 boolcheck("R^2/(V+1)^tau >= V^4/(V+1)^tau since R >= V^2",
           (R_t ** 2) / ((V_t + 1) ** tau_t) >= (V_t ** 4) / ((V_t + 1) ** tau_t))
@@ -995,7 +995,7 @@ part("SECTION 4.1: PURE-INTEGER UNIVERSAL BOUNDS AND ASYMPTOTIC SCALING")
 # Derived from: eq:vk_def, eq:Ek_def, eq:lk_sandwich, eq:cubic_identity
 # Test: Checks ALL 4 inequalities on exact constructive witness (c=6, d=139, k=114) at tau=2.800.
 # Mutant: Failing triple (c=6, d=10, k=10) violates eq:pass_valid_cond and eq:univ_round_nat.
-eq("eq:pass_valid_cond", 562, "Pass validity E_k^{q_tau} < v_k^{p_tau}")
+eq("eq:pass_valid_cond", 564, "Pass validity E_k^{q_tau} < v_k^{p_tau}")
 c_w, d_w, k_w = 6, 139, 114
 a0_t, b0_t = 11, 20
 p_t, q_t = 9 * b0_t + 4 * a0_t, 4 * b0_t  # 224, 80 -> tau = 224/80 = 2.800 = 9/4 + 11/20
@@ -1010,7 +1010,7 @@ boolcheck("MUTANT REJECTED: k=113 fails at (6, 139)",
           not (q_t * (113 * math.log(64.0) + 9.0 * math.log(w_w) + 6 * d_w * math.log(2 * exact_Lk(6, 113) - 1))
                < p_t * (2.0 * math.log(w_w) + 113 * math.log(lam_w))))
 
-eq("eq:univ_round_nat", 572, "Exact Nat per-round necessary condition")
+eq("eq:univ_round_nat", 574, "Exact Nat per-round necessary condition")
 lhs_rn = q_t * math.log(64) + 2 * p_t * math.log(d_w + 1) + 4 * d_w * p_t * math.log(c_w) + 6 * d_w * q_t * math.log(c_w + 2)
 rhs_rn = 4 * d_w * p_t * math.log(c_w + 2) + 6 * d_w * q_t * math.log(c_w - 1)
 boolcheck("witness (6,139) satisfies exact Nat round condition", lhs_rn < rhs_rn)
@@ -1018,14 +1018,14 @@ lhs_bad = q_t * math.log(64) + 2 * p_t * math.log(11) + 4 * 10 * p_t * math.log(
 rhs_bad = 4 * 10 * p_t * math.log(8) + 6 * 10 * q_t * math.log(5)
 boolcheck("MUTANT REJECTED: d=10 fails Nat round condition at c=6", not (lhs_bad < rhs_bad))
 
-eq("eq:univ_vk_vs_w", 577, "Pure-integer universal bound v_k^{4 a_0} > w^{18 b_0}")
+eq("eq:univ_vk_vs_w", 579, "Pure-integer universal bound v_k^{4 a_0} > w^{18 b_0}")
 boolcheck("witness (6,139,114) satisfies 4*a0*log(v_k) > 18*b0*log(w)",
           4 * a0_t * log_vk_w > 18 * b0_t * math.log(w_w))
 boolcheck("exponent cancellation 8*a0 + 9*q_tau - 2*p_tau == 18*b0",
           8 * a0_t + 9 * q_t - 2 * p_t == 18 * b0_t)
 boolcheck("MUTANT REJECTED: 16*b0 != 18*b0", 8 * a0_t + 9 * q_t - 2 * p_t != 16 * b0_t)
 
-eq("eq:univ_d_linear_c", 582, "Linear-in-c dimension floor d > c*(3 + tau*log2(d+1))/(6*delta)")
+eq("eq:univ_d_linear_c", 584, "Linear-in-c dimension floor d > c*(3 + tau*log2(d+1))/(6*delta)")
 delta_t = a0_t / b0_t
 tau_val_t = p_t / q_t
 d_rhs = c_w * (3.0 + tau_val_t * math.log2(d_w + 1.0)) / (6.0 * delta_t)
@@ -1038,24 +1038,24 @@ boolcheck("MUTANT REJECTED: (1 + 2/c)^c < 7 fails for large c", not ((1.0 + 2.0 
 # Derived from: eq:pass_valid_cond, eq:lk_sandwich, eq:cubic_identity
 # Test: Verifies each intermediate inequality strictly on witness (6, 139, 114).
 # Mutant: Flipping direction of eq:univ_cancel contradicts (c+2)(c-1)^2 < c^3.
-eq("eq:univ_step1", 590, "Step 1: lower bounding E_k^{q_tau} via 2 L_k - 1 >= rho^k")
+eq("eq:univ_step1", 592, "Step 1: lower bounding E_k^{q_tau} via 2 L_k - 1 >= rho^k")
 log_step1_lhs = 9 * q_t * math.log(w_w) + k_w * q_t * math.log(64) + 6 * d_w * k_w * q_t * math.log(8 / 5)
 boolcheck("step 1 chain holds strictly", log_step1_lhs <= q_t * log_Ek_w < p_t * log_vk_w)
 boolcheck("MUTANT REJECTED: reversing <= fails", not (log_step1_lhs > q_t * log_Ek_w))
 
-eq("eq:univ_step2", 595, "Step 2: w^{9 q_tau - 2 p_tau} < (Lambda^{p_tau} / (64^{q_tau} rho^{6 d q_tau}))^k")
+eq("eq:univ_step2", 597, "Step 2: w^{9 q_tau - 2 p_tau} < (Lambda^{p_tau} / (64^{q_tau} rho^{6 d q_tau}))^k")
 lhs_s2 = (9 * q_t - 2 * p_t) * math.log(w_w)
 rhs_s2 = k_w * (p_t * math.log(lam_w) - q_t * math.log(64) - 6 * d_w * q_t * math.log(8 / 5))
 boolcheck("step 2 holds strictly", lhs_s2 < rhs_s2)
 boolcheck("MUTANT REJECTED: k=1 violates step 2", not (lhs_s2 < rhs_s2 / k_w))
 
-eq("eq:univ_cancel", 606, "Cancellation showing Lambda^{p_tau}/(64^{q_tau} rho^{6 d q_tau} Lambda^{4 a_0}) < 1")
+eq("eq:univ_cancel", 608, "Cancellation showing Lambda^{p_tau}/(64^{q_tau} rho^{6 d q_tau} Lambda^{4 a_0}) < 1")
 log_ratio_cancel = (p_t - 4 * a0_t) * math.log(lam_w) - q_t * math.log(64) - 6 * d_w * q_t * math.log(8 / 5)
 boolcheck("exact log ratio < 0 (ratio < 1)", log_ratio_cancel < 0.0, f"log_ratio={log_ratio_cancel:.2f}")
 boolcheck("exponent algebra 36 - 24 == 12", 36 - 24 == 12)
 boolcheck("MUTANT REJECTED: wrong sign on exponent", 36 + 24 != 12)
 
-eq("eq:univ_d_step1", 613, "Factored round inequality 64^{4 b_0} (d+1)^{18 b_0 + 8 a_0} < (1 + 2/c)^{16 a_0 d}")
+eq("eq:univ_d_step1", 615, "Factored round inequality 64^{4 b_0} (d+1)^{18 b_0 + 8 a_0} < (1 + 2/c)^{16 a_0 d}")
 lhs_ds1 = 4 * b0_t * math.log(64) + (18 * b0_t + 8 * a0_t) * math.log(d_w + 1)
 mid_ds1 = 12 * b0_t * d_w * math.log(1 - (3 * c_w - 2) / (c_w ** 3)) + 16 * a0_t * d_w * math.log(1 + 2 / c_w)
 rhs_ds1 = 16 * a0_t * d_w * math.log(1 + 2 / c_w)
@@ -1067,7 +1067,7 @@ boolcheck("MUTANT REJECTED: mid > rhs is false", not (mid_ds1 > rhs_ds1))
 # Derived from: eq:univ_vk_vs_w, eq:univ_d_linear_c, eq:c_min_bound, eq:deps_upper
 # Test: Evaluates scaled ratios across delta = 0.05, 0.01, 0.001 verifying bounded convergence.
 # Mutant: Wrong exponent delta^{-2} or delta^{-4} diverges by >25x across delta in [0.001, 0.05].
-eq("eq:asymptotic_pre", 627, "Pre-Bini scaling Theta(delta^{-3} (ln delta^{-1})^2)")
+eq("eq:asymptotic_pre", 629, "Pre-Bini scaling Theta(delta^{-3} (ln delta^{-1})^2)")
 pre_samples = [(0.05, 37963961.01), (0.01, 8.719e9), (0.001, 1.661e13)]
 pre_ratios = [v / ((d ** -3) * (math.log(1 / d) ** 2)) for d, v in pre_samples]
 boolcheck("pre-Bini ratio / (delta^{-3} ln^2(1/delta)) stays within factor 1.6x across 50x in delta",
@@ -1075,7 +1075,7 @@ boolcheck("pre-Bini ratio / (delta^{-3} ln^2(1/delta)) stays within factor 1.6x 
 bad_pre_ratios = [v / ((d ** -2) * (math.log(1 / d) ** 2)) for d, v in pre_samples]
 boolcheck("MUTANT REJECTED: delta^{-2} diverges by >30x", max(bad_pre_ratios) / min(bad_pre_ratios) > 30.0)
 
-eq("eq:asymptotic_post", 632, "Post-Bini scaling Theta(delta^{-5} (ln delta^{-1})^3)")
+eq("eq:asymptotic_post", 634, "Post-Bini scaling Theta(delta^{-5} (ln delta^{-1})^3)")
 post_samples = [(0.05, 1.020e12), (0.01, 7.985e15), (0.001, 2.145e21)]
 post_ratios = [v / ((d ** -5) * (math.log(1 / d) ** 3)) for d, v in post_samples]
 boolcheck("post-Bini ratio / (delta^{-5} ln^3(1/delta)) stays within factor 1.9x across 50x in delta",
@@ -1083,7 +1083,7 @@ boolcheck("post-Bini ratio / (delta^{-5} ln^3(1/delta)) stays within factor 1.9x
 bad_post_ratios = [v / ((d ** -4) * (math.log(1 / d) ** 3)) for d, v in post_samples]
 boolcheck("MUTANT REJECTED: delta^{-4} diverges by >25x", max(bad_post_ratios) / min(bad_post_ratios) > 25.0)
 
-eq("eq:k_scaling", 643, "Constructive k = Theta(delta^{-2} ln(1/delta))")
+eq("eq:k_scaling", 645, "Constructive k = Theta(delta^{-2} ln(1/delta))")
 k_samples = [(0.05, 27605), (0.01, 1003639), (0.001, 141325903)]
 k_ratios = [kv / ((d ** -2) * math.log(1 / d)) for d, kv in k_samples]
 boolcheck("k / (delta^{-2} ln(1/delta)) stays within factor 1.15x across 50x in delta",
@@ -1091,7 +1091,7 @@ boolcheck("k / (delta^{-2} ln(1/delta)) stays within factor 1.15x across 50x in 
 bad_k_ratios = [kv / ((d ** -1) * math.log(1 / d)) for d, kv in k_samples]
 boolcheck("MUTANT REJECTED: delta^{-1} diverges by >40x", max(bad_k_ratios) / min(bad_k_ratios) > 40.0)
 
-eq("eq:h_scaling_lb", 650, "Bini power h = Theta(delta^{-2} ln(1/delta))")
+eq("eq:h_scaling_lb", 652, "Bini power h = Theta(delta^{-2} ln(1/delta))")
 h_samples = [(0.05, 12558), (0.01, 424254), (0.001, 59043144)]
 h_ratios = [hv / ((d ** -2) * math.log(1 / d)) for d, hv in h_samples]
 boolcheck("h / (delta^{-2} ln(1/delta)) stays within factor 1.25x across 50x in delta",
@@ -1104,14 +1104,14 @@ boolcheck("MUTANT REJECTED: delta^{-3} collapses by >40x", max(bad_h_ratios) / m
 # Derived from: eq:lk_ceiling_boost, eq:univ_round_nat, eq:C_schoolbook, eq:C_strassen, eq:C_padding
 # Test: Recomputes sharp UB and LB for tau = 2.800 and verifies printed table digits match.
 # Mutant: Dropping B_L weakens LB at c=6, d=136 below 7197.27.
-eq("eq:sharp_denom", 663, "Exact per-round upper bounds lambda_ub and Delta_ub")
+eq("eq:sharp_denom", 665, "Exact per-round upper bounds lambda_ub and Delta_ub")
 lam_ub_6_139 = 4 * 139 * math.log(8 / 6) - 2 * math.log(140)
 del_ub_6_139 = 2.8 * lam_ub_6_139 - 6 * 139 * math.log(8 / 5) - math.log(64)
 boolcheck("exact integer Lambda * 140^2 * 6^(4*139) <= 8^(4*139) (zero float rounding)",
           lam_w * (140 ** 2) * (6 ** (4 * 139)) <= 8 ** (4 * 139))
 boolcheck("MUTANT REJECTED: omitting -2*ln(d+1) overstates lambda_ub", 4 * 139 * math.log(8 / 6) > lam_ub_6_139 + 9.0)
 
-eq("eq:sharp_k_lnLam_lb", 668, "Sharp universal k*ln(Lambda) lower bound & Table 2/3 verification")
+eq("eq:sharp_k_lnLam_lb", 670, "Sharp universal k*ln(Lambda) lower bound & Table 2/3 verification")
 check("Table 2 tau=2.800 witness log10(v_k) matches 7927.63", log_vk_w / math.log(10.0), 7927.63, rtol=1e-4)
 lam_ub_136 = 4 * 136 * math.log(8 / 6) - 2 * math.log(137)
 del_ub_136 = 2.8 * lam_ub_136 - 6 * 136 * math.log(8 / 5) - math.log(64)
@@ -1143,7 +1143,7 @@ part("SECTION 4.3: FINITE DIRECT-SUM TO SINGLE-MATRIX CONVERSION")
 # Derived from: eq:V_post_def, eq:bini_condition
 # Test: Runs exact recurrence R_{j+1} = ceil(R_j/P) * R_ex and verifies Str_3 sub-Strassen.
 # Mutant: Omitting +1 in (R_ex/P + 1) fails when P does not divide R_ex.
-eq("eq:finite_schonhage", 694, "Finite direct-sum to single-matrix rank bound")
+eq("eq:finite_schonhage", 696, "Finite direct-sum to single-matrix rank bound")
 P_ex, Rex_ex = 7, 25
 Rj = Rex_ex
 B_ex = Fraction(Rex_ex, P_ex) + 1
@@ -1162,7 +1162,7 @@ v22 = (3 ** 22) * M22
 check("Str_3 single-matrix side log10(v^{21}) at N=22, h_Str=3, r_Sch=7 matches 343.25", 21 * math.log10(v22), 343.25, rtol=1e-3)
 boolcheck("MUTANT REJECTED: omitting +1 fails at j=2 (100 > 625/7)", not (100 <= Fraction(625, 7)))
 
-eq("eq:schonhage_induct", 702, "Inductive inequality (B^j + 1)(B - 1) <= B^{j+1} for B >= 2, j >= 1")
+eq("eq:schonhage_induct", 704, "Inductive inequality (B^j + 1)(B - 1) <= B^{j+1} for B >= 2, j >= 1")
 B_s = PolyQ.var("B")
 symcheck("algebraic expansion (B^2+1)(B-1) == B^3 - B^2 + B - 1",
          ((B_s ** 2) + 1) * (B_s - 1) - ((B_s ** 3) - (B_s ** 2) + B_s - 1))
@@ -1181,7 +1181,7 @@ part("SECTION 4.4: REMARK 4.5 GENERALIZATION, COUNTEREXAMPLES, AND OBSTRUCTION")
 # Derived from: eq:pass_valid_cond, eq:univ_round_nat, eq:univ_vk_vs_w
 # Test: Verifies both universal inequalities and all four derivation links on both Pass (m_t=8, n_s=6, Delta_bal=140) and a non-Pass zero-balancing-loss (Delta_bal=1) Remark 4.5 instance (m_t=5, n_s=4, R_num=2, R_den=1, kappa>0).
 # Mutant: Violating the 9/4 floor hypothesis (a) breaks the cancellation eq:r45_cancel.
-eq("eq:remark45_universal", 730, "Generalized Remark 4.5 universal round & v_k inequalities")
+eq("eq:remark45_universal", 732, "Generalized Remark 4.5 universal round & v_k inequalities")
 # Non-Pass Remark 4.5 test: m_t=5, n_s=4, R_num=2, R_den=1 -> m_t^3 R_den^2 = 125 <= 256 = 64*4 = n_s^3 R_num^2 (satisfies (a)!)
 # Wait: rate = (3/2) * ln(2) / ln(5/4) = 4.66 > 9/4; choose tighter R_num=14, R_den=10 -> 5^3*10^2=12500 <= 4^3*14^2=12544!
 # Rate = (3/2) * ln(1.4) / ln(1.25) = 2.26183 > 9/4! Target tau = 2.500 (a0=1, b0=4, p_tau=40, q_tau=16), Delta_bal = 1!
@@ -1207,12 +1207,12 @@ boolcheck("second universal bound 4*a0*log(v_k) > 18*b0*log(w) holds",
 boolcheck("MUTANT REJECTED: d=1 violates universal round bound even at Delta_bal=1",
           not ((64 ** (4 * b0_r)) * (ns ** (16 * a0_r * 1)) < (mt ** (16 * a0_r * 1))))
 
-eq("eq:r45_step1", 738, "Remark 4.5 proof step 1")
+eq("eq:r45_step1", 740, "Remark 4.5 proof step 1")
 boolcheck("step 1 log inequality holds strictly",
           q_r * Ek_r_log < p_r * (2 * math.log(w_r) + k_r * math.log(lam_r)))
 boolcheck("MUTANT REJECTED: reversing < fails", not (q_r * Ek_r_log > p_r * vk_r_log))
 
-eq("eq:r45_step2", 743, "Remark 4.5 proof step 2")
+eq("eq:r45_step2", 745, "Remark 4.5 proof step 2")
 lhs_r2 = (18 * b0_r - 8 * a0_r) * math.log(w_r) + k_r * (q_r * math.log(64) + 6 * d_r * q_r * math.log(Rnum))
 rhs_r2 = k_r * (p_r * math.log(lam_r) + 6 * d_r * q_r * math.log(Rden))
 boolcheck("step 2 holds strictly", lhs_r2 < rhs_r2)
@@ -1220,7 +1220,7 @@ boolcheck("MUTANT REJECTED: k=1 fails step 2",
           not ((18 * b0_r - 8 * a0_r) * math.log(w_r) + (q_r * math.log(64) + 6 * d_r * q_r * math.log(Rnum))
                < (p_r * math.log(lam_r) + 6 * d_r * q_r * math.log(Rden))))
 
-eq("eq:r45_cancel", 748, "Remark 4.5 cancellation chain from 9/4 floor")
+eq("eq:r45_cancel", 750, "Remark 4.5 cancellation chain from 9/4 floor")
 c1 = 9 * b0_r * math.log(lam_r) + 18 * b0_r * math.log(Dbal) + 36 * b0_r * d_r * math.log(ns) + 24 * b0_r * d_r * math.log(Rden)
 c2 = 36 * b0_r * d_r * math.log(mt) + 24 * b0_r * d_r * math.log(Rden)
 c3 = 36 * b0_r * d_r * math.log(ns) + 24 * b0_r * d_r * math.log(Rnum)
@@ -1229,7 +1229,7 @@ boolcheck("cancellation chain c1 <= c2 <= c3 holds", c1 <= c2 + 1e-9 and c2 <= c
 boolcheck("MUTANT REJECTED: breaking 9/4 floor flips c2 <= c3",
           not ((mt ** 3) * (10 ** 2) <= (ns ** 3) * (13 ** 2)))
 
-eq("eq:r45_round", 758, "Remark 4.5 round elimination chain")
+eq("eq:r45_round", 760, "Remark 4.5 round elimination chain")
 r1 = 4 * b0_r * math.log(64) + 2 * p_r * math.log(Dbal) + 4 * d_r * p_r * math.log(ns) + 24 * b0_r * d_r * math.log(Rnum)
 r2 = 4 * d_r * p_r * math.log(mt) + 24 * b0_r * d_r * math.log(Rden)
 r3 = 16 * a0_r * d_r * math.log(mt) + 36 * b0_r * d_r * math.log(ns) + 24 * b0_r * d_r * math.log(Rnum)
@@ -1241,7 +1241,7 @@ boolcheck("MUTANT REJECTED: r1 > r3 is false", not (r1 > r3))
 # Derived from: eq:bini_condition
 # Test: Checks concrete valid Bini conversion at v_0 = 16, r_0 = 512 (exact 9/4 floor), E_eps = 10, tau = 2.500 (a_0=1, b_0=4).
 # Mutant: Violating r_0^4 >= v_0^9 (e.g. hypothetical r_0 = 256 = v_0^2) violates (h E_eps + 1)^{b_0} < V^{a_0}.
-eq("eq:general_bini_horizon", 770, "Universal Bini horizon (h E_eps + 1)^{b_0} < V^{a_0} for r_0 >= v_0^{9/4}")
+eq("eq:general_bini_horizon", 772, "Universal Bini horizon (h E_eps + 1)^{b_0} < V^{a_0} for r_0 >= v_0^{9/4}")
 v0_b, r0_b, Eeps_b, a0_b, b0_b = 16, 512, 10, 1, 4  # r0^4 = 512^4 = 16^9 = v0^9 exact!
 # Find minimal h such that (h*10 + 1)*512^h < (16^h)^{2.5} <=> (10h + 1)^4 < 16^h
 h_b = 1
@@ -1262,7 +1262,7 @@ boolcheck("MUTANT REJECTED: r_0 = 256 < v_0^{9/4} breaks horizon at h=3",
 # Derived from: eq:exact_pp, eq:C_schoolbook
 # Test: Exact arbitrary-precision integer comparisons for Strassen, Pan, and untwisted Str_3 vs Table 2.
 # Mutant: 143640^1000 < 70^{2795} is false (since log_70(143640) = 2.79512 > 2.795).
-eq("eq:pan_counterexample", 787, "Exact integer counterexamples: Strassen (1969), Pan (1978), and untwisted Str_3")
+eq("eq:pan_counterexample", 789, "Exact integer counterexamples: Strassen (1969), Pan (1978), and untwisted Str_3")
 boolcheck("Strassen 1969: 7^{1000} < 2^{2808} exact in int", 7 ** 1000 < 2 ** 2808)
 boolcheck("Pan 1978: 143640^5 == 61147257343963028582400000 < 67822307284900000000000000 == 70^{14}",
           143640 ** 5 == 61147257343963028582400000
@@ -1279,7 +1279,7 @@ boolcheck("MUTANT REJECTED: Pan 70x70 does not beat 2.795 (log_70(143640) = 2.79
 # Derived from: eq:C_schoolbook
 # Test: Verifies Bernoulli lemma, general small-V consistency across delta=10^{-1}..10^{-6}, and explicit V=16, R*=513 at tau=2.251.
 # Mutant: At mu=2, b_0=2000 (delta=0.0005 < log_16(513/512)=0.000704), 513^{2000} > 16^{4501}.
-eq("eq:supermult_cap", 806, "Supermultiplicative bound cap Phi(V) <= V^{9/4}")
+eq("eq:supermult_cap", 808, "Supermultiplicative bound cap Phi(V) <= V^{9/4}")
 # Verify contradiction mechanism on concrete Phi(V) = (1 + eta)*V^{9/4} with V=16, eta=0.01, C_eps=10^6, eps=0.001
 V_sm, eta_sm, eps_sm, Ceps_sm = 16, 0.01, 0.001, 1e6
 ratio_sm = (1.0 + eta_sm) / (V_sm ** eps_sm)
@@ -1289,7 +1289,7 @@ boolcheck("ratio (1+eta)/V^eps > 1 forces ((1+eta)/V^eps)^r > C_eps for finite r
 boolcheck("MUTANT REJECTED: at eta=0 (Phi(V)=V^{9/4}), ratio < 1 and never exceeds C_eps",
           not ((1.0 / (V_sm ** eps_sm)) > 1.0))
 
-eq("eq:small_V_consistent", 811, "Small-V consistency (mu^9 + 1)^4 > (mu^4)^9 and (mu^9 + 1)^{4 b_0} < (mu^4)^{9 b_0 + 4 a_0}")
+eq("eq:small_V_consistent", 813, "Small-V consistency (mu^9 + 1)^4 > (mu^4)^9 and (mu^9 + 1)^{4 b_0} < (mu^4)^{9 b_0 + 4 a_0}")
 # Explicit V=16, R*=513 at tau=2.251 (a_0=1, b_0=1000)
 boolcheck("V=16, R*=513 satisfies 513 > 512 = 16^{9/4} and 513^{1000} < 16^{2251} exact in int",
           513 ** 4 > 16 ** 9 and 513 ** 1000 < 16 ** 2251)
@@ -1306,13 +1306,13 @@ for a0_s, b0_s in [(1, 1000), (1, 10000), (1, 100000), (1, 1000000)]:
 boolcheck("MUTANT REJECTED: at tau=2.2505 (b0=2000), V=16 R*=513 fails 513^{2000} < 16^{4501}",
           not (513 ** 2000 < 16 ** 4501))
 
-eq("eq:supermult_contra", 820, "Contradiction inequality (1 + eta)^r V^{(9/4)r} <= C_eps V^{(9/4 + eps)r}")
+eq("eq:supermult_contra", 822, "Contradiction inequality (1 + eta)^r V^{(9/4)r} <= C_eps V^{(9/4 + eps)r}")
 boolcheck("at r = r_contra, LHS strictly exceeds RHS",
           r_contra * math.log(1.0 + eta_sm) > math.log(Ceps_sm) + r_contra * eps_sm * math.log(V_sm))
 boolcheck("MUTANT REJECTED: at r=1, LHS does not exceed RHS yet",
           not (1 * math.log(1.0 + eta_sm) > math.log(Ceps_sm) + 1 * eps_sm * math.log(V_sm)))
 
-eq("eq:bernoulli_nat", 827, "Elementary Bernoulli bound (N + 1)^j < 2 N^j for N >= 2, 2j <= N")
+eq("eq:bernoulli_nat", 829, "Elementary Bernoulli bound (N + 1)^j < 2 N^j for N >= 2, 2j <= N")
 ok_bern = True
 for NN in range(2, 25):
     for jj in range(1, NN // 2 + 1):
@@ -1322,7 +1322,7 @@ boolcheck("exact integer Bernoulli & (N+1)^j < 2*N^j holds for all N in 2..24, 1
 # Mutant: at j = N, (N+1)^N > 2*N^N for all N >= 2 (approaches e > 2)!
 boolcheck("MUTANT REJECTED: fails at j = N = 4 (5^4 = 625 > 512 = 2*4^4)", not (5 ** 4 < 2 * (4 ** 4)))
 
-eq("eq:small_V_step", 834, "Power step (N + 1)^{4 a_0 j_1} < 2^{4 a_0} N^{4 a_0 j_1} <= mu^{4 a_0} N^{4 a_0 j_1}")
+eq("eq:small_V_step", 836, "Power step (N + 1)^{4 a_0 j_1} < 2^{4 a_0} N^{4 a_0 j_1} <= mu^{4 a_0} N^{4 a_0 j_1}")
 N_2, j1_2 = 2 ** 9, (2 ** 9) // 2  # 512, 256
 boolcheck("at mu=2, a_0=1: 513^{1024} < 16 * 512^{1024} exact in int",
           (N_2 + 1) ** (4 * j1_2) < 16 * (N_2 ** (4 * j1_2)))
@@ -1339,7 +1339,7 @@ part("SECTION 5: DYADIC-EXPONENT BRACKETING CALCULUS")
 # Derived from: eq:pass_valid_cond
 # Test: Exact arbitrary-precision integer check of 10^301 <= 2^1000 <= 10^302 and compositional mul/pow rules.
 # Mutant: 2^1000 <= 10^301 is false.
-eq("eq:log2_predicates", 865, "Pure-Nat Log2Ge/Log2Le calculus and exact 10^301 <= 2^1000 <= 10^302 bridge")
+eq("eq:log2_predicates", 867, "Pure-Nat Log2Ge/Log2Le calculus and exact 10^301 <= 2^1000 <= 10^302 bridge")
 boolcheck("10^301 <= 2^1000 <= 10^302 exact in Python arbitrary-precision int", 10 ** 301 <= 2 ** 1000 <= 10 ** 302)
 boolcheck("Log2Ge.pow: 2^15 <= 6^6 implies 2^(15*4) <= (6^4)^6",
           2 ** 15 <= 6 ** 6 and 2 ** (15 * 4) <= (6 ** 4) ** 6)

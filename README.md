@@ -6,7 +6,9 @@ This repository contains the paper [`matmul_9_4_constant.tex`](matmul_9_4_consta
 
 ## 1. Overview
 
-On November 24, 2026, OpenAI released the preprint *"The matrix multiplication exponent is nine fourths"*, reporting a matching lower bound $\omega_{\mathbb{F}} = 9/4 = 2.25$ over every field $\mathbb{F}$ to complement the October 2026 upper bound $\omega \le 9/4$. Constructive polynomial-packing proofs (culminating in Pass's explicit Strassen-style construction) realize $\omega \le 9/4$ by producing, for any target exponent $\tau = 9/4 + \delta > 9/4$, an exact rational bilinear identity that multiplies two $V \times V$ matrices using $R < V^\tau$ scalar multiplications, yielding an $O(n^\tau)$ algorithm $T(n) \le C(\tau)\,n^\tau$ by recursive block multiplication.
+On November 24, 2026, OpenAI released the preprint *"The matrix multiplication exponent is nine fourths"*, reporting a matching lower bound $\omega_{\mathbb{F}} = 9/4 = 2.25$ over every field $\mathbb{F}$ to complement OpenAI's non-constructive October 2, 2026 spectral proof of $\omega \le 9/4$. On October 30, 2026, Rafael Pass (*"Matrix Multiplication from Polynomial Packings: A Constructive Proof of $\omega \le 9/4$"*, arXiv:2610.28627) eliminated the asymptotic spectrum to give a self-contained, explicit recursive $O(n^{9/4 + \delta})$ algorithm for every $\delta > 0$ (Pass's Theorems 1.1 and 4.3). In a Strassen-style recursive algorithm, an $n \times n$ matrix is partitioned recursively into fixed-size blocks — the **base block size** (analogous to $2 \times 2$ in Strassen's 7-multiplication algorithm) — multiplied by a single finite bilinear identity. Pass's Theorem 4.3 compiles a polynomial-packing pipeline over integer parameters $(c, d, k)$ (packing $c + 1$ full products and one middle product into $c$ slightly longer products, balancing $2d$ primal–dual variables, uncoupling shared matrix legs, and symmetrizing over $k$ rounds) to produce an approximate bilinear identity of **pre-Bini base block size** $v_k \times v_k$; Bini $\varepsilon$-interpolation then removes the formal parameter $\varepsilon$ to produce an exact rational bilinear identity of **post-Bini base block size** $V \times V$ ($V = v_k^h$) and rank $R < V^\tau$ ($\tau = 9/4 + \delta$) for recursive block multiplication.
+
+**Pass noted qualitatively that the algorithm is "galactic" with enormous hidden constants, without quantifying them. This paper calculates exact, unviolable universal lower bounds and matching constructive upper bounds on those constants ($v_k$, $V$, and $C(\tau)$ in $T(n) \le C(\tau)\,n^\tau$).**
 
 **Even though every algebraic layer works and composing them proves $\omega \le 9/4$ mathematically, the base block size $v_k \times v_k$ required before the composed recursion even breaks even with classical exponents is astronomical across every valid parameter choice $(c, d, k)$ of Pass's Theorem 4.3:**
 
@@ -15,8 +17,6 @@ On November 24, 2026, OpenAI released the preprint *"The matrix multiplication e
 - **To reach $\tau = 2.251$:** $v_k > 10^{1.62 \times 10^{13}}$ universally — attained at $v_k \approx 10^{1.66 \times 10^{13}}$ ($6d \approx 6.16 \times 10^8$ polynomial variables, $k \approx 1.41 \times 10^8$ rounds).
 
 And those are **before** Bini $\varepsilon$-interpolation inflates the exact base block side exponentially further to $V > 10^{9.51 \times 10^5}$ (at $\tau = 2.800$), $V > 10^{6.15 \times 10^9}$ (at $\tau = 2.371$), and $V > 10^{2.08 \times 10^{21}}$ (at $\tau = 2.251$). **At any matrix size $n$ that fits in real memory, running the composed recursion directly would do vastly more work than naive $O(n^3)$.**
-
-**This paper proves exact, unviolable algebraic lower bounds and matching constructive achievability (upper) bounds on how large $v_k$, $V$, and $C(\tau)$ must be.**
 
 ### Figures
 
