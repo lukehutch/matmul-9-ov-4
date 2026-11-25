@@ -125,7 +125,7 @@ MatMul-9-over-4/
 │   ├── lean-toolchain                  # leanprover/lean4:v4.36.0
 │   ├── lakefile.toml                   # Zero-dependency pure-kernel Lean 4 package
 │   ├── MatMul94.lean                   # Root import
-│   ├── AxiomAudit.lean                 # #print axioms audit across all 81 exported theorems
+│   ├── AxiomAudit.lean                 # Axioms audit across all 81 exported theorems
 │   └── MatMul94/
 │       ├── Log2Bracket.lean            # Compositional pure-Nat dyadic exponent calculus
 │       ├── LayerConstraints.lean       # Layer 1--5 algebraic constraints & Lemma 4.3
