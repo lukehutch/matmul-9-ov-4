@@ -27,7 +27,7 @@ Every verbatim quote below is copied from text fetched and inspected in-session;
   - Claim: Remark 4.5 generalizes the scheme to arbitrary symmetric shapes P_{a,b} (P_{b,a} =~ P_{a,b}, P_{1,1}[p,q,r] = <p,q,r>) with eff(P_{L,L}) = O(L^kappa), m targets from n sources, and length inflation rho, yielding exponent threshold (3 kappa log rho) / (2 log(m/n)).
     Quote: "Fix integers m > n >= 1 and constants rho > 1, C >= 0. Suppose eff(P_{L,L}) = O(L^kappa) for some fixed kappa > 0. ... Since eff(Q_{L,L}) = eff(P_{L,L})^{6d}, the same iteration as in Theorem 4.3 gives, for every tau > 3 kappa log rho / (2 log(m/n)), there exists an exact rational bilinear algorithm for matrix multiplication using r < v^tau scalar multiplications for some v >= 2." (Sec. 4.3, Remark 4.5, p. 19)
 - **Status**: VERIFIED
-- **Notes**: Full text read in-session. Exact formulas checked line by line against `verification/matmul_9_4_constant_check.py` and `lean/`.
+- **Notes**: Full text read in-session. Exact formulas checked line by line against `verification/matmul_9_4_constant_check.py` and `verification/lean/`.
 
 ## OpenAI2026Upper
 - **Verified authors**: OpenAI

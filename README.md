@@ -91,7 +91,7 @@ Every factor in the $\delta^{-5}(\ln\delta^{-1})^3$ explosion comes from a rigid
 
 Every theorem in the paper is independently verified twice:
 
-- **Pure-Kernel Lean 4 (`lean/MatMul94/`, `leanprover/lean4:v4.36.0`):**
+- **Pure-Kernel Lean 4 (`verification/lean/MatMul94/`, `leanprover/lean4:v4.36.0`):**
   - `7,559` lines across 6 library/root modules plus `AxiomAudit.lean`.
   - **Zero Mathlib / zero external dependencies**, **zero `sorry`**, **zero custom axioms**, **zero `native_decide`**.
   - All `81` exported theorems are verified by `lake env leanchecker --fresh MatMul94` (`EC = 0`) and audited via `#print axioms` strictly within `{propext, Classical.choice, Quot.sound}`.
@@ -109,22 +109,22 @@ MatMul-9-over-4/
 │   ├── bounds_vs_exponent.{pdf,png}    # Figure 1: universal LB & achievability UB vs. tau
 │   └── scaling_vs_excess.{pdf,png}     # Figure 2: doubly-log scaling vs. delta = tau - 9/4
 ├── verification/
-│   ├── matmul_9_4_constant_check.py    # 221-check pure-Python symbolic & numerical audit
-│   ├── dag_check.py                    # Backward-only DAG & check-file order validator
-│   ├── plot_bounds.py                  # Matplotlib generator for Figures 1 and 2
-│   └── bib.md                          # Quote-backed bibliography verification log
-├── lean/
-│   ├── lean-toolchain                  # leanprover/lean4:v4.36.0
-│   ├── lakefile.toml                   # Zero-dependency pure-kernel Lean 4 package
-│   ├── MatMul94.lean                   # Root import
-│   ├── AxiomAudit.lean                 # Axioms audit across all 81 exported theorems
-│   └── MatMul94/
-│       ├── Log2Bracket.lean            # Compositional pure-Nat dyadic exponent calculus
-│       ├── LayerConstraints.lean       # Layer 1--5 algebraic constraints & Lemma 4.3
-│       ├── UniversalBounds.lean        # Infinite-domain universal lower bounds on v_k, V
-│       ├── ConstructiveWitnesses.lean  # Machine-checked constructive upper witnesses
-│       └── GeneralLimits.lean          # Remark 4.5, Bini horizon, disproof & obstruction
-└── README.md                           # This summary
+│   ├── matmul_9_4_constant_check.py        # 221-check pure-Python symbolic & numerical audit
+│   ├── dag_check.py                        # Backward-only DAG & check-file order validator
+│   ├── plot_bounds.py                      # Matplotlib generator for Figures 1 and 2
+│   ├── bib.md                              # Quote-backed bibliography verification log
+│   └── lean/
+│       ├── lean-toolchain                  # leanprover/lean4:v4.36.0
+│       ├── lakefile.toml                   # Zero-dependency pure-kernel Lean 4 package
+│       ├── MatMul94.lean                   # Root import
+│       ├── AxiomAudit.lean                 # Axioms audit across all 81 exported theorems
+│       └── MatMul94/
+│           ├── Log2Bracket.lean            # Compositional pure-Nat dyadic exponent calculus
+│           ├── LayerConstraints.lean       # Layer 1--5 algebraic constraints & Lemma 4.3
+│           ├── UniversalBounds.lean        # Infinite-domain universal lower bounds on v_k, V
+│           ├── ConstructiveWitnesses.lean  # Machine-checked constructive upper witnesses
+│           └── GeneralLimits.lean          # Remark 4.5, Bini horizon, disproof & obstruction
+└── README.md                               # This summary
 ```
 
 ### Local Build and Verification
@@ -139,6 +139,6 @@ python3 verification/dag_check.py matmul_9_4_constant.tex \
         verification/matmul_9_4_constant_check.py
 
 # 3. Cold-build and externally kernel-check the pure Lean 4 formalization
-(cd lean && lake clean && lake build && lake env leanchecker --fresh MatMul94 && \
+(cd verification/lean && lake clean && lake build && lake env leanchecker --fresh MatMul94 && \
         lake env lean AxiomAudit.lean)
 ```
