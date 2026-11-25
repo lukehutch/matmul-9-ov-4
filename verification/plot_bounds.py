@@ -375,7 +375,7 @@ def main() -> None:
     post_ub = np.array(post_ub)
     opt_ub = np.array(opt_ub)
 
-    # Sanity-check exact agreement with printed benchmark tables (Tables 2--4)
+    # Check selected grid-search estimates against broad benchmark-scale bands.
     idx_2800 = int(np.argmin(np.abs(taus - 2.800)))
     idx_2371 = int(np.argmin(np.abs(taus - 2.371)))
     idx_2251 = int(np.argmin(np.abs(taus - 2.251)))
