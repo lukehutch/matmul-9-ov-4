@@ -1,0 +1,49 @@
+# Lean 4 / Lake
+.lake/
+lake-packages/
+*.olean
+*.ilean
+*.trace
+*.hash
+*.c.hash
+*.setup.json
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+eggs/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.synctex.gz
+*.toc
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo

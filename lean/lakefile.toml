@@ -1,0 +1,6 @@
+name = "MatMul94"
+version = "0.1.0"
+defaultTargets = ["MatMul94"]
+
+[[lean_lib]]
+name = "MatMul94"
