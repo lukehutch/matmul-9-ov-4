@@ -37,7 +37,7 @@ import numpy as np
 
 
 # ============================================================================
-# Exact algebraic evaluators (matching Sections 3--4 of matmul_9_4_constant.tex)
+# Floating-point curve evaluators (matching Sections 3--4 of matmul_9_4_constant.tex)
 # ============================================================================
 def _vec_ln_fact(n: np.ndarray) -> np.ndarray:
     """Vectorized Stirling approximation with the 1/(12n) correction."""
@@ -72,7 +72,7 @@ def estimate_log_Md(c: int, d: int) -> float:
 
 
 def exact_Lk_log2m1(c: int, k: int) -> float:
-    """Compute ln(2 L_k(c) - 1) using exact recurrence for k <= 3000 and sharp sandwich above."""
+    """Estimate ln(2 L_k(c) - 1) via exact integer L_k for k <= 3000 and upper sandwich above."""
     if k <= 3000:
         L = 1
         for _ in range(k):
@@ -134,7 +134,7 @@ def find_min_valid_d(cond_fn, d_guess: int) -> int:
 
 
 def pass_pre_lb_ub(tau: float) -> tuple[float, float]:
-    """Sharp universal LB (Eqs. sharp_denom--sharp_k_lnLam_lb) and constructive UB for log10(v_k)."""
+    """Heuristic grid-search LB and witness-size estimates for pre-Bini log10(v_k)."""
     delta = tau - 2.25
     ln10 = math.log(10.0)
     best_lb = 1e100
@@ -189,7 +189,7 @@ def pass_pre_lb_ub(tau: float) -> tuple[float, float]:
 
 
 def pass_post_lb_ub(tau: float, use_exact_Md: bool = False) -> tuple[float, float]:
-    """Sharp universal LB (literal Pass) and constructive UB for post-Bini log10(V)."""
+    """Heuristic grid-search LB (literal Pass) and witness-size estimates for post-Bini log10(V)."""
     delta = tau - 2.25
     ln10 = math.log(10.0)
     best_lb = 1e100
@@ -218,7 +218,7 @@ def pass_post_lb_ub(tau: float, use_exact_Md: bool = False) -> tuple[float, floa
             du, lu, ln_w = del_ub(d)
             if du <= 0.0 or lu <= 0.0:
                 return 1e100
-            # Exact conservative floor for w and exact S = 3(2d+1)w - 2
+            # Floating-point floor estimate for w and S = 3(2d+1)w - 2 (exact integers when ln_w < 40)
             ln_w_lo = math.log(((c + 2) ** (2 * d)) // (d + 1)) if ln_w < 40.0 else ln_w - 1e-12
             BL = BL_full if ((9.0 - 2.0 * tau) * ln_w_lo / du >= j0 + 1e-9) else 0.0
             kc = ((9.0 - 2.0 * tau) * ln_w_lo + 6.0 * d * BL) / du
@@ -261,7 +261,7 @@ def pass_post_lb_ub(tau: float, use_exact_Md: bool = False) -> tuple[float, floa
 
 
 def str3_single_matrix_ub(tau: float) -> float | None:
-    """Single-matrix post-Bini log10(V_single) for untwisted Str_3^{otimes N} (Lemma 4.3)."""
+    """Heuristic grid-search log10(V_single) estimate for untwisted Str_3^{otimes N} (Lemma 4.3)."""
     floor_str3 = 3.0 * math.log(4.0) / math.log(6.0)
     if tau <= floor_str3 + 5e-4:
         return None
@@ -281,7 +281,7 @@ def str3_single_matrix_ub(tau: float) -> float | None:
         h_lo = max(1, int(math.ceil(lnE / margin)))
         for h in range(h_lo, h_lo + 45):
             lhs = math.log(h) + lnE + math.log1p(math.exp(-(math.log(h) + lnE)))
-            # Include exact +1 inside B = R_ex/P + 1 of Lemma 4.3
+            # Approximate ln(B) for B = R_ex/P + 1 using a capped exponential correction.
             ln_Rex_over_P = lhs + h * (lnr - lnp)
             ln_B = ln_Rex_over_P + math.exp(-min(ln_Rex_over_P, 50.0))
             rem = h * tau * lnv - ln_B
@@ -298,7 +298,7 @@ def str3_single_matrix_ub(tau: float) -> float | None:
 
 def shared_legend_handles(c_post: str, c_opt: str, c_pre: str, c_str3: str, c_slope: str) -> list[Line2D]:
     """Identical line-and-marker legend used on both Figure 1 and Figure 2.
-    Solid lines for universal LBs, strokeless open circles for achievable UBs,
+    Solid lines for LB estimates, strokeless open circles for witness-size estimates,
     no filled boxes, and no redundant style words in the labels.
     """
     return [
@@ -422,7 +422,7 @@ def main() -> None:
     })
 
     c_post = "#e85d75"      # bright coral-rose (Pass post-Bini)
-    c_opt = "#9d6bd4"       # soft orchid-violet (Optimized Pass M_d + Lu)
+    c_opt = "#9d6bd4"       # soft orchid-violet (Optimized Pass M_d)
     c_pre = "#3b8eea"       # luminous sky-azure (Pass pre-Bini)
     c_str3 = "#2eb872"      # fresh emerald-mint (Untwisted Str_3)
     c_ref = "#7b8794"       # soft slate gray (vertical thresholds)
@@ -438,11 +438,11 @@ def main() -> None:
     idx_f2 = [0, 1, 2, 4, 5, 6, 8, 9, 11, 12, 14, 15, 17, 19]
 
     # ========================================================================
-    # FIGURE 1: Universal lower bounds and achievability vs. exponent tau
+    # FIGURE 1: Numerical Pass envelopes and witness-size estimates vs. exponent tau
     # ========================================================================
     fig1, ax1 = plt.subplots(figsize=(8.8, 5.8))
 
-    # Universal LBs as crisp solid lines; achievable UBs as strokeless open circles
+    # LB estimates as crisp solid lines; witness-size estimates as strokeless open circles
     ax1.plot(taus, post_lb, color=c_post, linestyle="-", lw=2.1, zorder=3)
     ax1.plot(taus[idx_f1], post_ub[idx_f1], color=c_post, linestyle="none",
              marker="o", markersize=6.8, markerfacecolor="none",
