@@ -143,10 +143,12 @@ uv run verification/plot_bounds.py
 
 # 2. Run the pure-Python symbolic/numerical check suite + DAG validator
 python3 -W error verification/matmul_9_4_constant_check.py
-python3 verification/dag_check.py matmul_9_4_constant.tex verification/matmul_9_4_constant_check.py
+python3 verification/dag_check.py matmul_9_4_constant.tex \
+        verification/matmul_9_4_constant_check.py
 
 # 3. Cold-build and externally kernel-check the pure Lean 4 formalization
-(cd lean && lake clean && lake build && lake env leanchecker --fresh MatMul94 && lake env lean AxiomAudit.lean)
+(cd lean && lake clean && lake build && lake env leanchecker --fresh MatMul94 && \
+        lake env lean AxiomAudit.lean)
 
 # 4. Build the PDF (cleanly into /tmp/latex-build)
 mkdir -p /tmp/latex-build
