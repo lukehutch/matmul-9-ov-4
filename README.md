@@ -111,7 +111,7 @@ Every theorem in the paper is independently verified twice:
 
 ```text
 MatMul-9-over-4/
-├── matmul_9_4_constant.tex             # Main LaTeX manuscript (with landscape tables at end)
+├── matmul_9_4_constant.tex             # LaTeX manuscript
 ├── matmul_9_4_constant.bib             # Verified BibTeX references
 ├── figures/
 │   ├── bounds_vs_exponent.{pdf,png}    # Figure 1: universal LB & achievability UB vs. tau
